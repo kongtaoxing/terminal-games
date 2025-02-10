@@ -14,7 +14,10 @@ A simple terminal-based game inspired by the classic "Gold Miner" game, implemen
 
 1. The hook automatically swings left and right.
 2. Press **space** to release the hook and collect items.
-3. Press `q` to quit the game.
+   - Gold ($) is worth 100 points
+   - Stones (O) will deduct 50 points
+3. When all items are collected, new ones will be generated.
+4. Press `q` to quit the game.
 
 ## Installation
 
