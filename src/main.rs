@@ -9,7 +9,6 @@ use tui::{
     Terminal,
 };
 
-mod goldminer;
 use goldminer::Game;
 
 fn main() -> Result<(), Box<dyn Error>> {
