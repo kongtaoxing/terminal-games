@@ -22,6 +22,8 @@ pub struct Game {
     pub caught_item: Option<Item>,
     pub window_width: f32,
     pub window_height: f32,
+    pub level: i32,
+    pub items_collected: i32,
 }
 
 impl Game {
@@ -46,6 +48,8 @@ impl Game {
             caught_item: None,
             window_width: width,
             window_height: height,
+            level: 1,
+            items_collected: 0,
         };
         game.generate_items();
         game
@@ -59,34 +63,40 @@ impl Game {
         let mut rng = thread_rng();
 
         self.items.clear();
+        self.items_collected = 0;
 
         let margin = 10.0;
         let min_x = margin;
         let max_x = self.window_width - margin;
 
-        for _ in 0..2 {
+        let level = self.level.min(5);
+
+        let big_gold_count = 2 + (level - 1) / 2;
+        for _ in 0..big_gold_count {
             self.items.push(Item {
                 x: rng.gen_range(min_x..max_x),
                 y: rng.gen_range(15.0..self.window_height - 5.0),
                 item_type: ItemType::Gold,
                 value: 200,
                 size: 2.0,
-                weight: 2.0,
+                weight: 2.0 + (level as f32 * 0.2),
             });
         }
 
-        for _ in 0..4 {
+        let small_gold_count = 4 + (level - 1);
+        for _ in 0..small_gold_count {
             self.items.push(Item {
                 x: rng.gen_range(min_x..max_x),
                 y: rng.gen_range(15.0..self.window_height - 5.0),
                 item_type: ItemType::Gold,
                 value: 100,
                 size: 1.0,
-                weight: 1.0,
+                weight: 1.0 + (level as f32 * 0.1),
             });
         }
 
-        for _ in 0..3 {
+        let stone_count = 3 + level - 1;
+        for _ in 0..stone_count {
             let size = rng.gen_range(1.0..2.0);
             self.items.push(Item {
                 x: rng.gen_range(min_x..max_x),
@@ -94,7 +104,7 @@ impl Game {
                 item_type: ItemType::Stone,
                 value: -50,
                 size,
-                weight: size * 1.5,
+                weight: size * (1.5 + level as f32 * 0.1),
             });
         }
     }
@@ -108,7 +118,16 @@ impl Game {
         self.last_update = now;
 
         if self.hook_state == HookState::Idle {
-            self.hook_angle += delta * 2.0;
+            let base_speed = 1.0;  // 基础速度
+            let level_speed = match self.level {
+                1 => 1.0,     // 第1关：基础速度
+                2 => 1.2,     // 第2关：稍快
+                3 => 1.4,     // 第3关：更快
+                4 => 1.6,     // 第4关：更快
+                _ => 2.0,     // 第5关及以后：最快速度
+            };
+            
+            self.hook_angle += delta * base_speed * level_speed;
             if self.hook_angle > std::f32::consts::PI {
                 self.hook_angle = -std::f32::consts::PI;
             }
@@ -152,8 +171,10 @@ impl Game {
                 if let Some(item) = self.caught_item.take() {
                     self.score += item.value;
                     self.items.retain(|i| i.x != item.x || i.y != item.y);
+                    self.items_collected += 1;
 
                     if self.items.is_empty() {
+                        self.level += 1;
                         self.generate_items();
                     }
                 }
@@ -195,7 +216,10 @@ impl Game {
         let hook_screen_x = self.hook_x + (self.hook_angle.sin() * swing_range);
 
         let mut content = vec![];
-        content.push(Spans::from(format!("Score: {}", self.score)));
+        content.push(Spans::from(format!(
+            "Level: {}  Score: {}",
+            self.level, self.score
+        )));
 
         for y in 0..area.height {
             let mut line = String::new();
