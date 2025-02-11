@@ -25,9 +25,18 @@ pub struct Game {
 }
 
 impl Game {
+    /// 创建一个新的游戏实例
+    ///
+    /// # Returns
+    ///
+    /// 返回一个初始化好的 Game 结构体
     pub fn new() -> Game {
+        let terminal = crossterm::terminal::size().unwrap();
+        let width = terminal.0 as f32;
+        let height = terminal.1 as f32;
+
         let mut game = Game {
-            hook_x: 40.0,
+            hook_x: width / 2.0,
             hook_y: 2.0,
             hook_angle: 0.0,
             hook_state: HookState::Idle,
@@ -35,50 +44,53 @@ impl Game {
             last_update: Instant::now(),
             items: Vec::new(),
             caught_item: None,
-            window_width: 80.0,
-            window_height: 30.0,
+            window_width: width,
+            window_height: height,
         };
         game.generate_items();
         game
     }
 
+    /// 生成游戏中的物品
+    ///
+    /// 随机生成金子和石头，并将它们放置在游戏区域内
     pub fn generate_items(&mut self) {
         use rand::{thread_rng, Rng};
         let mut rng = thread_rng();
-        
+
         self.items.clear();
-        
+
         let margin = 10.0;
-        let min_x = (self.window_width / 2.0) - (self.window_width / 2.0) + margin;
-        let max_x = (self.window_width / 2.0) + (self.window_width / 2.0) - margin;
-        
+        let min_x = margin;
+        let max_x = self.window_width - margin;
+
         for _ in 0..2 {
             self.items.push(Item {
                 x: rng.gen_range(min_x..max_x),
-                y: rng.gen_range(15.0..self.window_height-5.0),
+                y: rng.gen_range(15.0..self.window_height - 5.0),
                 item_type: ItemType::Gold,
                 value: 200,
                 size: 2.0,
                 weight: 2.0,
             });
         }
-        
+
         for _ in 0..4 {
             self.items.push(Item {
                 x: rng.gen_range(min_x..max_x),
-                y: rng.gen_range(15.0..self.window_height-5.0),
+                y: rng.gen_range(15.0..self.window_height - 5.0),
                 item_type: ItemType::Gold,
                 value: 100,
                 size: 1.0,
                 weight: 1.0,
             });
         }
-        
+
         for _ in 0..3 {
             let size = rng.gen_range(1.0..2.0);
             self.items.push(Item {
                 x: rng.gen_range(min_x..max_x),
-                y: rng.gen_range(15.0..self.window_height-5.0),
+                y: rng.gen_range(15.0..self.window_height - 5.0),
                 item_type: ItemType::Stone,
                 value: -50,
                 size,
@@ -87,6 +99,9 @@ impl Game {
         }
     }
 
+    /// 更新游戏状态
+    ///
+    /// 处理钩子的移动、物品的捕获以及分数的计算
     pub fn update(&mut self) {
         let now = Instant::now();
         let delta = now.duration_since(self.last_update).as_secs_f32();
@@ -98,29 +113,30 @@ impl Game {
                 self.hook_angle = -std::f32::consts::PI;
             }
         }
-        
+
         let swing_range = (self.window_width / 2.0) - 10.0;
         let hook_screen_x = self.hook_x + (self.hook_angle.sin() * swing_range);
-        
+
         if self.hook_state == HookState::Extending {
             self.hook_y += delta * 20.0;
-            
+
             if self.caught_item.is_none() {
                 for item in &self.items {
-                    if (hook_screen_x - item.x).abs() < item.size && 
-                       (self.hook_y - item.y).abs() < item.size {
+                    if (hook_screen_x - item.x).abs() < item.size
+                        && (self.hook_y - item.y).abs() < item.size
+                    {
                         self.caught_item = Some((*item).clone());
                         self.hook_state = HookState::Retracting;
                         break;
                     }
                 }
             }
-            
+
             if self.hook_y > self.window_height - 5.0 {
                 self.hook_state = HookState::Retracting;
             }
         }
-        
+
         if self.hook_state == HookState::Retracting {
             let base_speed = 15.0;
             let speed = if let Some(item) = &self.caught_item {
@@ -128,15 +144,15 @@ impl Game {
             } else {
                 base_speed
             };
-            
+
             self.hook_y -= delta * speed;
-            
+
             if self.hook_y <= 2.0 {
                 self.hook_y = 2.0;
                 if let Some(item) = self.caught_item.take() {
                     self.score += item.value;
                     self.items.retain(|i| i.x != item.x || i.y != item.y);
-                    
+
                     if self.items.is_empty() {
                         self.generate_items();
                     }
@@ -146,6 +162,11 @@ impl Game {
         }
     }
 
+    /// 处理用户输入
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - 用户按下的键
     pub fn handle_input(&mut self, key: KeyCode) {
         match key {
             KeyCode::Char(' ') => {
@@ -157,6 +178,12 @@ impl Game {
         }
     }
 
+    /// 渲染游戏界面
+    ///
+    /// # Arguments
+    ///
+    /// * `f` - 帧缓冲区
+    /// * `area` - 渲染区域
     pub fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         self.window_width = area.width as f32;
         self.window_height = area.height as f32;
@@ -166,26 +193,38 @@ impl Game {
         let rope_char = "│";
         let swing_range = (self.window_width / 2.0) - 10.0;
         let hook_screen_x = self.hook_x + (self.hook_angle.sin() * swing_range);
-        
+
         let mut content = vec![];
         content.push(Spans::from(format!("Score: {}", self.score)));
-        
+
         for y in 0..area.height {
             let mut line = String::new();
             for x in 0..area.width {
                 let mut char_to_draw = ' ';
-                
+
                 for item in &self.items {
-                    if (x as f32).floor() == item.x.floor() && 
-                       (y as f32).floor() == item.y.floor() {
+                    if (x as f32).floor() == item.x.floor() && (y as f32).floor() == item.y.floor()
+                    {
                         char_to_draw = match item.item_type {
-                            ItemType::Gold => if item.size > 1.5 { '@' } else { '$' },
-                            ItemType::Stone => if item.size > 1.5 { '#' } else { 'O' },
+                            ItemType::Gold => {
+                                if item.size > 1.5 {
+                                    '@'
+                                } else {
+                                    '$'
+                                }
+                            }
+                            ItemType::Stone => {
+                                if item.size > 1.5 {
+                                    '#'
+                                } else {
+                                    'O'
+                                }
+                            }
                             ItemType::Nothing => ' ',
                         };
                     }
                 }
-                
+
                 if y as f32 == self.hook_y.floor() && x as f32 == hook_screen_x.floor() {
                     line.push_str(hook_char);
                 } else if x as f32 == hook_screen_x.floor() && (y as f32) < self.hook_y {
@@ -201,4 +240,4 @@ impl Game {
             .block(Block::default().borders(Borders::ALL).title("Gold Miner"));
         f.render_widget(paragraph, area);
     }
-} 
+}
