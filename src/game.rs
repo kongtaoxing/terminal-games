@@ -3,7 +3,8 @@ use std::time::Instant;
 use tui::{
     backend::Backend,
     layout::Rect,
-    text::Spans,
+    style::{Color, Style},
+    text::{Span, Spans},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
@@ -138,12 +139,11 @@ impl Game {
 
         if self.hook_state == HookState::Extending {
             self.hook_y += delta * 20.0;
-
+            
             if self.caught_item.is_none() {
                 for item in &self.items {
-                    if (hook_screen_x - item.x).abs() < item.size
-                        && (self.hook_y - item.y).abs() < item.size
-                    {
+                    if (hook_screen_x - item.x).abs() < item.size + 1.0 && 
+                       (self.hook_y - item.y).abs() < item.size + 1.0 {
                         self.caught_item = Some((*item).clone());
                         self.hook_state = HookState::Retracting;
                         break;
@@ -210,58 +210,85 @@ impl Game {
         self.window_height = area.height as f32;
         self.hook_x = self.window_width / 2.0;
 
-        let hook_char = "↓";
-        let rope_char = "│";
+        let hook_chars = vec!["▼", "▽"];
+        let rope_chars = vec!["║", "│"];
+        let frame_index = (self.last_update.elapsed().as_millis() / 200) as usize % 2;
+        let hook_char = hook_chars[frame_index];
+        let rope_char = rope_chars[frame_index];
+
         let swing_range = (self.window_width / 2.0) - 10.0;
         let hook_screen_x = self.hook_x + (self.hook_angle.sin() * swing_range);
-
+        
         let mut content = vec![];
-        content.push(Spans::from(format!(
-            "Level: {}  Score: {}",
-            self.level, self.score
-        )));
-
+        
+        content.push(Spans::from(vec![
+            Span::styled("Level: ", Style::default().fg(Color::Yellow)),
+            Span::styled(self.level.to_string(), Style::default().fg(Color::Green)),
+            Span::raw("  "),
+            Span::styled("Score: ", Style::default().fg(Color::Yellow)),
+            Span::styled(self.score.to_string(), Style::default().fg(Color::Green)),
+        ]));
+        
         for y in 0..area.height {
-            let mut line = String::new();
+            let mut line_spans = vec![];
             for x in 0..area.width {
                 let mut char_to_draw = ' ';
-
+                let mut style = Style::default();
+                
                 for item in &self.items {
-                    if (x as f32).floor() == item.x.floor() && (y as f32).floor() == item.y.floor()
-                    {
-                        char_to_draw = match item.item_type {
+                    if (x as f32 - item.x).abs() <= item.size && 
+                       (y as f32 - item.y).abs() <= item.size {
+                        match item.item_type {
                             ItemType::Gold => {
                                 if item.size > 1.5 {
-                                    '@'
+                                    char_to_draw = '◆';
+                                    style = Style::default().fg(Color::Yellow);
                                 } else {
-                                    '$'
+                                    char_to_draw = '♦';
+                                    style = Style::default().fg(Color::Yellow);
                                 }
-                            }
+                            },
                             ItemType::Stone => {
                                 if item.size > 1.5 {
-                                    '#'
+                                    char_to_draw = '■';
+                                    style = Style::default().fg(Color::Gray);
                                 } else {
-                                    'O'
+                                    char_to_draw = '□';
+                                    style = Style::default().fg(Color::DarkGray);
                                 }
-                            }
-                            ItemType::Nothing => ' ',
-                        };
+                            },
+                            ItemType::Nothing => {},
+                        }
                     }
                 }
-
+                
                 if y as f32 == self.hook_y.floor() && x as f32 == hook_screen_x.floor() {
-                    line.push_str(hook_char);
+                    line_spans.push(Span::styled(
+                        hook_char,
+                        Style::default().fg(Color::Red)
+                    ));
                 } else if x as f32 == hook_screen_x.floor() && (y as f32) < self.hook_y {
-                    line.push_str(rope_char);
+                    line_spans.push(Span::styled(
+                        rope_char,
+                        Style::default().fg(Color::Red)
+                    ));
                 } else {
-                    line.push(char_to_draw);
+                    line_spans.push(Span::styled(
+                        char_to_draw.to_string(),
+                        style
+                    ));
                 }
             }
-            content.push(Spans::from(line));
+            content.push(Spans::from(line_spans));
         }
 
         let paragraph = Paragraph::new(content)
-            .block(Block::default().borders(Borders::ALL).title("Gold Miner"));
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .title(Span::styled(
+                    "Gold Miner",
+                    Style::default().fg(Color::Yellow)
+                )));
         f.render_widget(paragraph, area);
     }
 }
