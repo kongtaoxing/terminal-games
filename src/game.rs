@@ -119,13 +119,13 @@ impl Game {
         self.last_update = now;
 
         if self.hook_state == HookState::Idle {
-            let base_speed = 1.0;  // 基础速度
+            let base_speed = 0.5;
             let level_speed = match self.level {
-                1 => 1.0,     // 第1关：基础速度
-                2 => 1.2,     // 第2关：稍快
-                3 => 1.4,     // 第3关：更快
-                4 => 1.6,     // 第4关：更快
-                _ => 2.0,     // 第5关及以后：最快速度
+                1 => 1.0,
+                2 => 1.2,
+                3 => 1.4,
+                4 => 1.6,
+                _ => 2.0,
             };
             
             self.hook_angle += delta * base_speed * level_speed;
@@ -133,29 +133,34 @@ impl Game {
                 self.hook_angle = -std::f32::consts::PI;
             }
         }
-
+        
         let swing_range = (self.window_width / 2.0) - 10.0;
         let hook_screen_x = self.hook_x + (self.hook_angle.sin() * swing_range);
-
+        
         if self.hook_state == HookState::Extending {
             self.hook_y += delta * 20.0;
             
             if self.caught_item.is_none() {
+                let mut item_to_remove = None;
                 for item in &self.items {
                     if (hook_screen_x - item.x).abs() < item.size + 1.0 && 
                        (self.hook_y - item.y).abs() < item.size + 1.0 {
                         self.caught_item = Some((*item).clone());
+                        item_to_remove = Some((item.x, item.y));
                         self.hook_state = HookState::Retracting;
                         break;
                     }
                 }
+                if let Some((x, y)) = item_to_remove {
+                    self.items.retain(|i| i.x != x || i.y != y);
+                }
             }
-
+            
             if self.hook_y > self.window_height - 5.0 {
                 self.hook_state = HookState::Retracting;
             }
         }
-
+        
         if self.hook_state == HookState::Retracting {
             let base_speed = 15.0;
             let speed = if let Some(item) = &self.caught_item {
@@ -163,17 +168,19 @@ impl Game {
             } else {
                 base_speed
             };
-
+            
             self.hook_y -= delta * speed;
-
+            
             if self.hook_y <= 2.0 {
                 self.hook_y = 2.0;
                 if let Some(item) = self.caught_item.take() {
                     self.score += item.value;
-                    self.items.retain(|i| i.x != item.x || i.y != item.y);
                     self.items_collected += 1;
-
-                    if self.items.is_empty() {
+                    
+                    let gold_remaining = self.items.iter()
+                        .any(|i| matches!(i.item_type, ItemType::Gold));
+                    
+                    if !gold_remaining {
                         self.level += 1;
                         self.generate_items();
                     }
@@ -235,6 +242,7 @@ impl Game {
                 let mut char_to_draw = ' ';
                 let mut style = Style::default();
                 
+                // 绘制未抓到的物品
                 for item in &self.items {
                     if (x as f32 - item.x).abs() <= item.size && 
                        (y as f32 - item.y).abs() <= item.size {
@@ -262,6 +270,38 @@ impl Game {
                     }
                 }
                 
+                // 绘制被抓到的物品（保持原来的形状和大小）
+                if let Some(caught) = &self.caught_item {
+                    let caught_x = hook_screen_x;
+                    let caught_y = self.hook_y + caught.size; // 物品位于钩子正下方
+                    
+                    if (x as f32 - caught_x).abs() <= caught.size && 
+                       (y as f32 - caught_y).abs() <= caught.size {
+                        match caught.item_type {
+                            ItemType::Gold => {
+                                if caught.size > 1.5 {
+                                    char_to_draw = '◆';
+                                    style = Style::default().fg(Color::Yellow);
+                                } else {
+                                    char_to_draw = '♦';
+                                    style = Style::default().fg(Color::Yellow);
+                                }
+                            },
+                            ItemType::Stone => {
+                                if caught.size > 1.5 {
+                                    char_to_draw = '■';
+                                    style = Style::default().fg(Color::Gray);
+                                } else {
+                                    char_to_draw = '□';
+                                    style = Style::default().fg(Color::DarkGray);
+                                }
+                            },
+                            ItemType::Nothing => {},
+                        }
+                    }
+                }
+                
+                // 绘制钩子和绳子
                 if y as f32 == self.hook_y.floor() && x as f32 == hook_screen_x.floor() {
                     line_spans.push(Span::styled(
                         hook_char,
