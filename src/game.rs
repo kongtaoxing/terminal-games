@@ -12,6 +12,13 @@ use tui::{
 use crate::hook::HookState;
 use crate::item::{Item, ItemType};
 
+// 添加游戏状态枚举
+#[derive(PartialEq)]
+pub enum GameState {
+    Welcome,
+    Playing,
+}
+
 pub struct Game {
     pub hook_x: f32,
     pub hook_y: f32,
@@ -25,6 +32,7 @@ pub struct Game {
     pub window_height: f32,
     pub level: i32,
     pub items_collected: i32,
+    pub game_state: GameState,  // 添加游戏状态字段
 }
 
 impl Game {
@@ -51,6 +59,7 @@ impl Game {
             window_height: height,
             level: 1,
             items_collected: 0,
+            game_state: GameState::Welcome,  // 初始状态为欢迎界面
         };
         game.generate_items();
         game
@@ -66,9 +75,9 @@ impl Game {
         self.items.clear();
         self.items_collected = 0;
         
-        // 添加安全检查，确保窗口大小足够
+        // 添加安全检查
         if self.window_width < 20.0 || self.window_height < 10.0 {
-            return;  // 窗口太小时不生成物品
+            return;
         }
         
         let margin = 10.0_f32;
@@ -80,11 +89,13 @@ impl Game {
         let min_y = f32::min(15.0, self.window_height / 4.0);
         let max_y = f32::max(self.window_height - 5.0, min_y + 1.0);
         
-        let level = self.level.min(5);
+        // 修改：扩展到10个关卡的物品生成
+        let level = self.level.min(10);  // 第10关后难度不再增加
         
+        // 大金子数量：2-6个
         let big_gold_count = 2 + (level - 1) / 2;
         for _ in 0..big_gold_count {
-            if min_x < max_x && min_y < max_y {  // 添加范围检查
+            if min_x < max_x && min_y < max_y {
                 self.items.push(Item {
                     x: rng.gen_range(min_x..max_x),
                     y: rng.gen_range(min_y..max_y),
@@ -96,9 +107,10 @@ impl Game {
             }
         }
         
+        // 小金子数量：4-13个
         let small_gold_count = 4 + (level - 1);
         for _ in 0..small_gold_count {
-            if min_x < max_x && min_y < max_y {  // 添加范围检查
+            if min_x < max_x && min_y < max_y {
                 self.items.push(Item {
                     x: rng.gen_range(min_x..max_x),
                     y: rng.gen_range(min_y..max_y),
@@ -110,9 +122,10 @@ impl Game {
             }
         }
         
+        // 石头数量：3-12个
         let stone_count = 3 + level - 1;
         for _ in 0..stone_count {
-            if min_x < max_x && min_y < max_y {  // 添加范围检查
+            if min_x < max_x && min_y < max_y {
                 let size = rng.gen_range(1.0..2.0);
                 self.items.push(Item {
                     x: rng.gen_range(min_x..max_x),
@@ -135,13 +148,19 @@ impl Game {
         self.last_update = now;
 
         if self.hook_state == HookState::Idle {
+            // 修改：扩展到10个关卡的速度变化
             let base_speed = 0.5;
             let level_speed = match self.level {
-                1 => 1.0,
-                2 => 1.2,
-                3 => 1.4,
-                4 => 1.6,
-                _ => 2.0,
+                1 => 1.0,     // 最慢
+                2 => 1.1,
+                3 => 1.2,
+                4 => 1.3,
+                5 => 1.4,
+                6 => 1.5,
+                7 => 1.6,
+                8 => 1.7,
+                9 => 1.8,
+                _ => 2.0,     // 第10关及以后最快
             };
             
             self.hook_angle += delta * base_speed * level_speed;
@@ -212,13 +231,22 @@ impl Game {
     ///
     /// * `key` - 用户按下的键
     pub fn handle_input(&mut self, key: KeyCode) {
-        match key {
-            KeyCode::Char(' ') => {
-                if self.hook_state == HookState::Idle {
-                    self.hook_state = HookState::Extending;
+        match self.game_state {
+            GameState::Welcome => {
+                if key == KeyCode::Enter {
+                    self.game_state = GameState::Playing;
+                }
+            },
+            GameState::Playing => {
+                match key {
+                    KeyCode::Char(' ') => {
+                        if self.hook_state == HookState::Idle {
+                            self.hook_state = HookState::Extending;
+                        }
+                    }
+                    _ => {}
                 }
             }
-            _ => {}
         }
     }
 
@@ -229,6 +257,57 @@ impl Game {
     /// * `f` - 帧缓冲区
     /// * `area` - 渲染区域
     pub fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+        match self.game_state {
+            GameState::Welcome => self.render_welcome(f, area),
+            GameState::Playing => self.render_game(f, area),
+        }
+    }
+
+    // 添加处理欢迎界面的渲染函数
+    fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+        let welcome_text = vec![
+            Spans::from(vec![
+                Span::styled("Welcome to Gold Miner!", 
+                    Style::default().fg(Color::Yellow))
+            ]),
+            Spans::from(""),
+            Spans::from("How to Play:"),
+            Spans::from(""),
+            Spans::from(" 1. The hook swings automatically"),
+            Spans::from(" 2. Press SPACE to release the hook"),
+            Spans::from(" 3. Catch gold (◆/♦) for points:"),
+            Spans::from("    - Big Gold (◆) = 200 points"),
+            Spans::from("    - Small Gold (♦) = 100 points"),
+            Spans::from(" 4. Avoid stones (■/□) (-50 points)"),
+            Spans::from(" 5. Collect all gold to advance to next level"),
+            Spans::from(" 6. Higher levels have:"),
+            Spans::from("    - Faster hook movement"),
+            Spans::from("    - Heavier items"),
+            Spans::from("    - More obstacles"),
+            Spans::from(""),
+            Spans::from(" Controls:"),
+            Spans::from(" - SPACE: Release/Retract hook"),
+            Spans::from(" - Q: Quit game"),
+            Spans::from(""),
+            Spans::from(vec![
+                Span::styled("Press ENTER to start the game!", 
+                    Style::default().fg(Color::Green))
+            ]),
+        ];
+
+        let paragraph = Paragraph::new(welcome_text)
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .title(Span::styled(
+                    "Gold Miner",
+                    Style::default().fg(Color::Yellow)
+                )))
+            .alignment(tui::layout::Alignment::Center);
+        f.render_widget(paragraph, area);
+    }
+
+    // 将原来的 render 函数改名为 render_game
+    fn render_game<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         // 添加最小窗口大小检查
         if area.width < 20 || area.height < 10 {
             let warning = vec![
