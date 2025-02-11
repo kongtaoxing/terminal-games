@@ -8,7 +8,7 @@ use tui::{
     Frame,
 };
 
-use crate::hook::{HookState};
+use crate::hook::HookState;
 use crate::item::{Item, ItemType};
 
 pub struct Game {
