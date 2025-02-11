@@ -62,51 +62,67 @@ impl Game {
     pub fn generate_items(&mut self) {
         use rand::{thread_rng, Rng};
         let mut rng = thread_rng();
-
+        
         self.items.clear();
         self.items_collected = 0;
-
-        let margin = 10.0;
-        let min_x = margin;
-        let max_x = self.window_width - margin;
-
+        
+        // 添加安全检查，确保窗口大小足够
+        if self.window_width < 20.0 || self.window_height < 10.0 {
+            return;  // 窗口太小时不生成物品
+        }
+        
+        let margin = 10.0_f32;
+        // 确保生成范围至少有1个单位的宽度
+        let min_x = f32::min(margin, self.window_width / 4.0);
+        let max_x = f32::max(self.window_width - margin, min_x + 1.0);
+        
+        // 确保生成范围至少有1个单位的高度
+        let min_y = f32::min(15.0, self.window_height / 4.0);
+        let max_y = f32::max(self.window_height - 5.0, min_y + 1.0);
+        
         let level = self.level.min(5);
-
+        
         let big_gold_count = 2 + (level - 1) / 2;
         for _ in 0..big_gold_count {
-            self.items.push(Item {
-                x: rng.gen_range(min_x..max_x),
-                y: rng.gen_range(15.0..self.window_height - 5.0),
-                item_type: ItemType::Gold,
-                value: 200,
-                size: 2.0,
-                weight: 2.0 + (level as f32 * 0.2),
-            });
+            if min_x < max_x && min_y < max_y {  // 添加范围检查
+                self.items.push(Item {
+                    x: rng.gen_range(min_x..max_x),
+                    y: rng.gen_range(min_y..max_y),
+                    item_type: ItemType::Gold,
+                    value: 200,
+                    size: 2.0,
+                    weight: 2.0 + (level as f32 * 0.2),
+                });
+            }
         }
-
+        
         let small_gold_count = 4 + (level - 1);
         for _ in 0..small_gold_count {
-            self.items.push(Item {
-                x: rng.gen_range(min_x..max_x),
-                y: rng.gen_range(15.0..self.window_height - 5.0),
-                item_type: ItemType::Gold,
-                value: 100,
-                size: 1.0,
-                weight: 1.0 + (level as f32 * 0.1),
-            });
+            if min_x < max_x && min_y < max_y {  // 添加范围检查
+                self.items.push(Item {
+                    x: rng.gen_range(min_x..max_x),
+                    y: rng.gen_range(min_y..max_y),
+                    item_type: ItemType::Gold,
+                    value: 100,
+                    size: 1.0,
+                    weight: 1.0 + (level as f32 * 0.1),
+                });
+            }
         }
-
+        
         let stone_count = 3 + level - 1;
         for _ in 0..stone_count {
-            let size = rng.gen_range(1.0..2.0);
-            self.items.push(Item {
-                x: rng.gen_range(min_x..max_x),
-                y: rng.gen_range(15.0..self.window_height - 5.0),
-                item_type: ItemType::Stone,
-                value: -50,
-                size,
-                weight: size * (1.5 + level as f32 * 0.1),
-            });
+            if min_x < max_x && min_y < max_y {  // 添加范围检查
+                let size = rng.gen_range(1.0..2.0);
+                self.items.push(Item {
+                    x: rng.gen_range(min_x..max_x),
+                    y: rng.gen_range(min_y..max_y),
+                    item_type: ItemType::Stone,
+                    value: -50,
+                    size,
+                    weight: size * (1.5 + level as f32 * 0.1),
+                });
+            }
         }
     }
 
@@ -213,6 +229,28 @@ impl Game {
     /// * `f` - 帧缓冲区
     /// * `area` - 渲染区域
     pub fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+        // 添加最小窗口大小检查
+        if area.width < 20 || area.height < 10 {
+            let warning = vec![
+                Spans::from(vec![
+                    Span::styled(
+                        "Window too small!",
+                        Style::default().fg(Color::Red)
+                    )
+                ]),
+                Spans::from(vec![
+                    Span::styled(
+                        "Please resize",
+                        Style::default().fg(Color::Yellow)
+                    )
+                ])
+            ];
+            let paragraph = Paragraph::new(warning)
+                .block(Block::default().borders(Borders::ALL));
+            f.render_widget(paragraph, area);
+            return;
+        }
+
         self.window_width = area.width as f32;
         self.window_height = area.height as f32;
         self.hook_x = self.window_width / 2.0;
