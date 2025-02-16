@@ -9,7 +9,7 @@ use tui::{
     Terminal,
 };
 
-use goldminer::{game_manager::GameState, GameManager};
+use terminal_games::{game_manager::GameState, GameManager};
 
 fn main() -> Result<(), Box<dyn Error>> {
     // 设置终端
