@@ -1,7 +1,37 @@
 # Tetris
 
-Tetris is a classic puzzle game where the player must clear lines by filling them with blocks. The game is played in a grid, and the player must rotate and move the blocks to form complete lines.
+Tetris is a classic puzzle game where players must strategically arrange falling blocks to create complete horizontal lines.
 
 ## Game Rules
 
-> coming soon...
+1. **Basic Gameplay**
+   - Blocks of different shapes fall from the top of the screen
+   - Use arrow keys to move and rotate blocks
+   - Complete horizontal lines to clear them and score points
+
+2. **Controls**
+   - **LEFT/RIGHT Arrow**: Move block horizontally
+   - **DOWN Arrow**: Speed up block descent
+   - **UP Arrow**: Rotate block
+   - **SPACE**: Hard drop (instantly drop block)
+
+3. **Scoring System**
+   - 1 line cleared: 100 points
+   - 2 lines cleared: 300 points
+   - 3 lines cleared: 500 points
+   - 4 lines cleared: 800 points
+
+4. **Game Over**
+   - The game ends when new blocks can't enter the playing field
+   - Your final score will be displayed
+
+## Block Shapes
+
+The game features seven classic Tetris shapes (Tetriminos):
+- I-shape: Long straight piece
+- O-shape: Square block
+- T-shape: T-shaped piece
+- J-shape: J-shaped piece
+- L-shape: L-shaped piece
+- S-shape: S-shaped piece
+- Z-shape: Z-shaped piece

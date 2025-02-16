@@ -10,9 +10,16 @@ A collection of classic terminal-based games implemented in Rust. Currently feat
 - Avoid stones that deduct points
 - Simple yet addictive gameplay
 
-### 2. Tetris (Coming Soon)
+### 2. Tetris
 - Classic block-stacking puzzle game
-- Currently in development
+- Seven different block shapes
+- Score points by clearing lines
+- Progressive difficulty
+- Scoring system:
+  - 1 line: 100 points
+  - 2 lines: 300 points
+  - 3 lines: 500 points
+  - 4 lines: 800 points
 
 ## Features
 
@@ -36,6 +43,14 @@ A collection of classic terminal-based games implemented in Rust. Currently feat
    - Stones (O) will deduct 50 points
 3. When all items are collected, new ones will be generated
 4. Press **Q** to return to main menu
+
+### Tetris
+1. Use **LEFT/RIGHT** arrow keys to move blocks horizontally
+2. Use **UP** arrow key to rotate blocks
+3. Use **DOWN** arrow key to speed up descent
+4. Press **SPACE** for hard drop
+5. Clear lines to score points
+6. Press **Q** to return to main menu
 
 ## Installation
 
@@ -62,7 +77,6 @@ A collection of classic terminal-based games implemented in Rust. Currently feat
 ## Future Improvements
 
 - Add more classic games to the collection
-- Implement complete Tetris gameplay
 - Add high score system
 - Include sound effects
 - Add game settings and difficulty levels
