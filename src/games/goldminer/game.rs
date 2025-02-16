@@ -9,8 +9,8 @@ use tui::{
     Frame,
 };
 
-use crate::hook::HookState;
-use crate::item::{Item, ItemType};
+use crate::games::goldminer::hook::HookState;
+use crate::games::goldminer::item::{Item, ItemType};
 
 // 添加游戏状态枚举
 #[derive(PartialEq)]
@@ -19,7 +19,7 @@ pub enum GameState {
     Playing,
 }
 
-pub struct Game {
+pub struct GoldMiner {
     pub hook_x: f32,
     pub hook_y: f32,
     pub hook_angle: f32,
@@ -35,18 +35,18 @@ pub struct Game {
     pub game_state: GameState,  // 添加游戏状态字段
 }
 
-impl Game {
+impl GoldMiner {
     /// 创建一个新的游戏实例
     ///
     /// # Returns
     ///
     /// 返回一个初始化好的 Game 结构体
-    pub fn new() -> Game {
+    pub fn new() -> GoldMiner {
         let terminal = crossterm::terminal::size().unwrap();
         let width = terminal.0 as f32;
         let height = terminal.1 as f32;
 
-        let mut game = Game {
+        let mut game = GoldMiner {
             hook_x: width / 2.0,
             hook_y: 2.0,
             hook_angle: 0.0,

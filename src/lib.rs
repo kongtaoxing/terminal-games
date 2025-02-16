@@ -1,5 +1,4 @@
-pub mod game;
-pub mod hook;
-pub mod item;
+pub mod game_manager;
+pub mod games;
 
-pub use game::Game;
+pub use game_manager::GameManager;

@@ -9,7 +9,7 @@ use tui::{
     Terminal,
 };
 
-use goldminer::Game;
+use goldminer::{game_manager::GameState, GameManager};
 
 fn main() -> Result<(), Box<dyn Error>> {
     // 设置终端
@@ -19,9 +19,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    // 运行游戏
-    let mut game = Game::new();
-    let res = run_game(&mut terminal, &mut game);
+    // 运行游戏管理器
+    let mut game_manager = GameManager::new();
+    let res = run_game(&mut terminal, &mut game_manager);
 
     // 清理终端设置
     disable_raw_mode()?;
@@ -39,17 +39,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_game<B: Backend>(terminal: &mut Terminal<B>, game: &mut Game) -> io::Result<()> {
+fn run_game<B: Backend>(terminal: &mut Terminal<B>, game_manager: &mut GameManager) -> io::Result<()> {
     loop {
-        terminal.draw(|f| game.render(f, f.size()))?;
+        terminal.draw(|f| game_manager.render(f, f.size()))?;
 
-        game.update();
+        game_manager.update();
 
         if event::poll(Duration::from_millis(16))? {
             if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char('q') => return Ok(()),
-                    key_code => game.handle_input(key_code),
+                if key.code == KeyCode::Char('q') {
+                    if game_manager.state == GameState::MainMenu {
+                        return Ok(());
+                    } else {
+                        game_manager.state = GameState::MainMenu;
+                    }
+                } else {
+                    game_manager.handle_input(key.code);
                 }
             }
         }
