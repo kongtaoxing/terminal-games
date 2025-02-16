@@ -39,7 +39,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_game<B: Backend>(terminal: &mut Terminal<B>, game_manager: &mut GameManager) -> io::Result<()> {
+fn run_game<B: Backend>(
+    terminal: &mut Terminal<B>,
+    game_manager: &mut GameManager,
+) -> io::Result<()> {
     loop {
         terminal.draw(|f| game_manager.render(f, f.size()))?;
 
