@@ -71,6 +71,7 @@ pub struct Tetris {
     score: u32,
     tick_count: u32,
     current_shape: [[bool; 4]; 4],
+    block_width: u16,
 }
 
 impl Tetris {
@@ -85,6 +86,7 @@ impl Tetris {
             score: 0,
             tick_count: 0,
             current_shape: SHAPES[piece],
+            block_width: 2,
         }
     }
 
@@ -125,9 +127,16 @@ impl Tetris {
     }
 
     pub fn render<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+        let available_width = area.width as usize;
+        let game_width = self.board[0].len() * self.block_width as usize;
+        let padding = if available_width > game_width {
+            (available_width - game_width) / 2
+        } else {
+            0
+        };
+
         let mut display_board = self.board.clone();
 
-        // 将当前方块添加到显示板上
         if !self.game_over {
             for y in 0..4 {
                 for x in 0..4 {
@@ -143,27 +152,38 @@ impl Tetris {
         }
 
         let mut text = vec![];
+        
+        text.push(Spans::from(""));
+
         for row in &display_board {
-            let mut line = String::new();
+            let mut line = " ".repeat(padding);
             for &cell in row {
-                line.push(if cell { '█' } else { '·' });
+                line.push_str(if cell { "██" } else { "··" });
             }
             text.push(Spans::from(line));
         }
 
         text.push(Spans::from(""));
-        text.push(Spans::from(format!("Score: {}", self.score)));
+        text.push(Spans::from(format!("{}Score: {}", " ".repeat(padding), self.score)));
         if self.game_over {
-            text.push(Spans::from("Game Over!"));
+            text.push(Spans::from(format!("{}Game Over!", " ".repeat(padding))));
         }
 
-        let paragraph = Paragraph::new(text)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .title(Span::styled("Tetris", Style::default().fg(Color::Cyan))),
-            )
-            .alignment(tui::layout::Alignment::Center);
+        let available_height = area.height as usize;
+        let required_height = text.len();
+        let start_index = if required_height > available_height {
+            required_height - available_height
+        } else {
+            0
+        };
+        let visible_text = text[start_index..].to_vec();
+
+        let paragraph = Paragraph::new(visible_text)
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .title(Span::styled("Tetris", Style::default().fg(Color::Cyan))))
+            .alignment(tui::layout::Alignment::Left);
+
         f.render_widget(paragraph, area);
     }
 
@@ -248,16 +268,23 @@ impl Tetris {
     }
 
     fn clear_lines(&mut self) {
-        let mut lines_cleared = 0;
+        let mut lines_to_clear = vec![];
 
-        for y in (0..20).rev() {
+        // 首先找出所有需要清除的行
+        for y in 0..20 {
             if self.board[y].iter().all(|&cell| cell) {
-                self.board.remove(y);
-                self.board.insert(0, vec![false; 10]);
-                lines_cleared += 1;
+                lines_to_clear.push(y);
             }
         }
 
+        // 从下往上清除行
+        for &y in lines_to_clear.iter().rev() {
+            self.board.remove(y);
+            self.board.insert(0, vec![false; 10]);
+        }
+
+        // 根据消除的行数计算分数
+        let lines_cleared = lines_to_clear.len();
         self.score += match lines_cleared {
             1 => 100,
             2 => 300,
