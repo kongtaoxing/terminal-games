@@ -88,8 +88,23 @@ lazy_static! {
 
         let mut press_enter = HashMap::new();
         press_enter.insert(Language::English, "Press ENTER to start!".to_string());
-        press_enter.insert(Language::Chinese, "按回车键开始！".to_string());
+        press_enter.insert(Language::Chinese, "按回车键开始".to_string());
         m.insert("press_enter", press_enter);
+
+        let mut pause_game = HashMap::new();
+        pause_game.insert(Language::English, "Press P or ESC to pause Game".to_string());
+        pause_game.insert(Language::Chinese, "按P或ESC键暂停游戏".to_string());
+        m.insert("pause_game", pause_game);
+
+        let mut game_paused = HashMap::new();
+        game_paused.insert(Language::English, "Game Paused".to_string());
+        game_paused.insert(Language::Chinese, "游戏暂停".to_string());
+        m.insert("game_paused", game_paused);
+
+        let mut press_p_to_resume = HashMap::new();
+        press_p_to_resume.insert(Language::English, "Press P or ESC to resume".to_string());
+        press_p_to_resume.insert(Language::Chinese, "按P或ESC键继续".to_string());
+        m.insert("press_p_to_resume", press_p_to_resume);
 
         m
     };

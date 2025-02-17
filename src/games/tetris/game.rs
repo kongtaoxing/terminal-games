@@ -14,6 +14,7 @@ use crate::translation::{Language, Translations};
 pub enum GameState {
     Welcome,
     Playing,
+    Paused,
 }
 
 // 定义方块形状
@@ -131,7 +132,19 @@ impl Tetris {
                     self.hard_drop();
                     true
                 }
+                KeyCode::Char('p') | KeyCode::Esc => {
+                    self.game_state = GameState::Paused;
+                    true
+                }
                 _ => false,
+            },
+            GameState::Paused => {
+                if key == KeyCode::Char('p') || key == KeyCode::Esc {
+                    self.game_state = GameState::Playing;
+                    true
+                } else {
+                    false
+                }
             }
         }
     }
@@ -155,6 +168,7 @@ impl Tetris {
         match self.game_state {
             GameState::Welcome => self.render_welcome(f, area),
             GameState::Playing => self.render_game(f, area),
+            GameState::Paused => self.render_pause(f, area),
         }
     }
 
@@ -183,6 +197,7 @@ impl Tetris {
             Spans::from(""),
             Spans::from(self.translations.get_text("quit_control")),
             Spans::from(self.translations.get_text("press_enter")),
+            Spans::from(self.translations.get_text("pause_game")),
         ];
 
         let paragraph = Paragraph::new(welcome_text)
@@ -261,6 +276,27 @@ impl Tetris {
                 )))
             .alignment(tui::layout::Alignment::Left);
 
+        f.render_widget(paragraph, area);
+    }
+
+    pub fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+        let pause_text = vec![
+            Spans::from(vec![Span::styled(
+                self.translations.get_text("game_paused"),
+                Style::default().fg(Color::Yellow),
+            )]),
+            Spans::from(""),
+            Spans::from(self.translations.get_text("press_p_to_resume")),
+        ];
+
+        let paragraph = Paragraph::new(pause_text)
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .title(Span::styled(
+                    self.translations.get_text("tetris_title"),
+                    Style::default().fg(Color::Yellow),
+                )))
+            .alignment(tui::layout::Alignment::Center);
         f.render_widget(paragraph, area);
     }
 
