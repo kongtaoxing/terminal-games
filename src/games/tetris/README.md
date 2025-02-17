@@ -14,6 +14,7 @@ Tetris is a classic puzzle game where players must strategically arrange falling
    - **DOWN Arrow**: Speed up block descent
    - **UP Arrow**: Rotate block
    - **SPACE**: Hard drop (instantly drop block)
+   - **R**: Restart after game over 
 
 3. **Scoring System**
    - 1 line cleared: 100 points

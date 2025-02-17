@@ -4,22 +4,8 @@ A collection of classic terminal-based games implemented in Rust. Currently feat
 
 ## Available Games
 
-### 1. Gold Miner
-- Control a hook to collect gold and avoid stones
-- Earn points by collecting gold pieces
-- Avoid stones that deduct points
-- Simple yet addictive gameplay
-
-### 2. Tetris
-- Classic block-stacking puzzle game
-- Seven different block shapes
-- Score points by clearing lines
-- Progressive difficulty
-- Scoring system:
-  - 1 line: 100 points
-  - 2 lines: 300 points
-  - 3 lines: 500 points
-  - 4 lines: 800 points
+1. [Gold Miner](./src/games/goldminer/README.md)
+2. [Tetris](./src/games/tetris/README.md)
 
 ## Features
 
@@ -30,27 +16,12 @@ A collection of classic terminal-based games implemented in Rust. Currently feat
 
 ## How to Play
 
-### Main Menu
 1. Use **UP/DOWN** arrow keys to select a game
 2. Press **ENTER** to start the selected game
-3. Alternatively, press number keys (**1**, **2**) to directly select games
+3. Alternatively, press number keys (**1**, **2**, etc.) to directly select games
 4. Press **Q** to quit
-
-### Gold Miner
-1. The hook automatically swings left and right
-2. Press **SPACE** to release the hook and collect items
-   - Gold ($) is worth 100 points
-   - Stones (O) will deduct 50 points
-3. When all items are collected, new ones will be generated
-4. Press **Q** to return to main menu
-
-### Tetris
-1. Use **LEFT/RIGHT** arrow keys to move blocks horizontally
-2. Use **UP** arrow key to rotate blocks
-3. Use **DOWN** arrow key to speed up descent
-4. Press **SPACE** for hard drop
-5. Clear lines to score points
-6. Press **Q** to return to main menu
+5. In any game, press **p** or **Esc** to pause the game and pretend to compile some projects, and then press **Enter** to continue the game
+6. Press **C** to choose the language of the code for pretending to compile
 
 ## Installation
 
