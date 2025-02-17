@@ -152,6 +152,7 @@ impl GameManager {
             for line in self.translations.get_text("controls_desc").split('\n') {
                 menu_text.push(Spans::from(line.to_string()));
             }
+            menu_text.push(Spans::from(self.translations.get_text("compiling")));
         }
 
         let paragraph = Paragraph::new(menu_text)

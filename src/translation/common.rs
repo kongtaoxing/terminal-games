@@ -32,6 +32,11 @@ lazy_static! {
         controls_desc.insert(Language::Chinese, "- 使用上下方向键选择\n- 按回车键开始游戏\n- T：切换语言\n- Q：退出游戏".to_string());
         m.insert("controls_desc", controls_desc);
 
+        let mut compiling = HashMap::new();
+        compiling.insert(Language::English, "- Press p or Esc to pause game and pretend to compile code (fish).".to_string());
+        compiling.insert(Language::Chinese, "- 游戏中按p或者Esc可暂停游戏并假装编译代码（摸鱼）".to_string());
+        m.insert("compiling", compiling);
+
         m
     };
 } 

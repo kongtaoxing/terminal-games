@@ -1,5 +1,5 @@
 use crossterm::event::KeyCode;
-use std::time::Instant;
+use std::{cell::RefCell, time::Instant};
 use tui::{
     backend::Backend,
     layout::Rect,
@@ -9,7 +9,7 @@ use tui::{
     Frame,
 };
 
-use crate::games::goldminer::hook::HookState;
+use crate::games::{compiling::Compiling, goldminer::hook::HookState};
 use crate::games::goldminer::item::{Item, ItemType};
 use crate::translation::{Language, Translations};
 
@@ -18,6 +18,7 @@ use crate::translation::{Language, Translations};
 pub enum GameState {
     Welcome,
     Playing,
+    Paused,
 }
 
 pub struct GoldMiner {
@@ -35,6 +36,7 @@ pub struct GoldMiner {
     pub items_collected: i32,
     pub game_state: GameState, // 添加游戏状态字段
     translations: Translations,  // 添加translations字段
+    compiling: RefCell<Compiling>,
 }
 
 impl GoldMiner {
@@ -63,6 +65,7 @@ impl GoldMiner {
             items_collected: 0,
             game_state: GameState::Welcome, // 初始状态为欢迎界面
             translations: Translations::new(),
+            compiling: RefCell::new(Compiling::new()),
         };
         game.generate_items();
         game
@@ -146,6 +149,11 @@ impl GoldMiner {
     ///
     /// 处理钩子的移动、物品的捕获以及分数的计算
     pub fn update(&mut self) {
+
+        if self.game_state == GameState::Paused {
+            self.compiling.borrow_mut().update();
+            return;
+        }
         let now = Instant::now();
         let delta = now.duration_since(self.last_update).as_secs_f32();
         self.last_update = now;
@@ -249,8 +257,16 @@ impl GoldMiner {
                         self.hook_state = HookState::Extending;
                     }
                 }
+                KeyCode::Char('p') | KeyCode::Esc => {
+                    self.game_state = GameState::Paused;
+                }
                 _ => {}
             },
+            GameState::Paused => {
+                if key == KeyCode::Char('p') || key == KeyCode::Esc {
+                    self.game_state = GameState::Playing;
+                }
+            }
         }
     }
 
@@ -264,6 +280,7 @@ impl GoldMiner {
         match self.game_state {
             GameState::Welcome => self.render_welcome(f, area),
             GameState::Playing => self.render_game(f, area),
+            GameState::Paused => self.render_pause(f, area),
         }
     }
 
@@ -452,6 +469,10 @@ impl GoldMiner {
                 ),
             ));
         f.render_widget(paragraph, area);
+    }
+
+    pub fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+        self.compiling.borrow_mut().render(f, area);
     }
 
     pub fn set_language(&mut self, language: Language) {

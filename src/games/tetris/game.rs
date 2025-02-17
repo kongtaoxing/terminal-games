@@ -9,6 +9,8 @@ use tui::{
     Frame,
 };
 use crate::translation::{Language, Translations};
+use crate::games::compiling::Compiling;
+use std::cell::RefCell;
 
 #[derive(PartialEq)]
 pub enum GameState {
@@ -82,6 +84,7 @@ pub struct Tetris {
     block_width: u16,
     game_state: GameState,
     translations: Translations,
+    compiling: RefCell<Compiling>,
 }
 
 impl Tetris {
@@ -99,6 +102,7 @@ impl Tetris {
             block_width: 2,
             game_state: GameState::Welcome,
             translations: Translations::new(),
+            compiling: RefCell::new(Compiling::new()),
         }
     }
 
@@ -151,6 +155,9 @@ impl Tetris {
 
     pub fn update(&mut self) {
         if self.game_over || self.game_state != GameState::Playing {
+            if self.game_state == GameState::Paused {
+                self.compiling.borrow_mut().update();
+            }
             return;
         }
 
@@ -280,24 +287,7 @@ impl Tetris {
     }
 
     pub fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
-        let pause_text = vec![
-            Spans::from(vec![Span::styled(
-                self.translations.get_text("game_paused"),
-                Style::default().fg(Color::Yellow),
-            )]),
-            Spans::from(""),
-            Spans::from(self.translations.get_text("press_p_to_resume")),
-        ];
-
-        let paragraph = Paragraph::new(pause_text)
-            .block(Block::default()
-                .borders(Borders::ALL)
-                .title(Span::styled(
-                    self.translations.get_text("tetris_title"),
-                    Style::default().fg(Color::Yellow),
-                )))
-            .alignment(tui::layout::Alignment::Center);
-        f.render_widget(paragraph, area);
+        self.compiling.borrow_mut().render(f, area);
     }
 
     fn move_piece(&mut self, dx: i32, dy: i32) -> bool {
