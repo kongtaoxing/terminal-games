@@ -10,6 +10,12 @@ use tui::{
 };
 use crate::translation::{Language, Translations};
 
+#[derive(PartialEq)]
+pub enum GameState {
+    Welcome,
+    Playing,
+}
+
 // 定义方块形状
 const SHAPES: [[[bool; 4]; 4]; 7] = [
     // I形
@@ -73,6 +79,7 @@ pub struct Tetris {
     tick_count: u32,
     current_shape: [[bool; 4]; 4],
     block_width: u16,
+    game_state: GameState,
     translations: Translations,
 }
 
@@ -89,6 +96,7 @@ impl Tetris {
             tick_count: 0,
             current_shape: SHAPES[piece],
             block_width: 2,
+            game_state: GameState::Welcome,
             translations: Translations::new(),
         }
     }
@@ -102,24 +110,34 @@ impl Tetris {
             return false;
         }
 
-        match key {
-            KeyCode::Left => self.move_piece(-1, 0),
-            KeyCode::Right => self.move_piece(1, 0),
-            KeyCode::Down => self.move_piece(0, 1),
-            KeyCode::Up => {
-                self.rotate_piece();
-                true
+        match self.game_state {
+            GameState::Welcome => {
+                if key == KeyCode::Enter {
+                    self.game_state = GameState::Playing;
+                    true
+                } else {
+                    false
+                }
             }
-            KeyCode::Char(' ') => {
-                self.hard_drop();
-                true
+            GameState::Playing => match key {
+                KeyCode::Left => self.move_piece(-1, 0),
+                KeyCode::Right => self.move_piece(1, 0),
+                KeyCode::Down => self.move_piece(0, 1),
+                KeyCode::Up => {
+                    self.rotate_piece();
+                    true
+                }
+                KeyCode::Char(' ') => {
+                    self.hard_drop();
+                    true
+                }
+                _ => false,
             }
-            _ => false,
         }
     }
 
     pub fn update(&mut self) {
-        if self.game_over {
+        if self.game_over || self.game_state != GameState::Playing {
             return;
         }
 
@@ -134,6 +152,51 @@ impl Tetris {
     }
 
     pub fn render<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+        match self.game_state {
+            GameState::Welcome => self.render_welcome(f, area),
+            GameState::Playing => self.render_game(f, area),
+        }
+    }
+
+    pub fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+        let welcome_text = vec![
+            Spans::from(vec![Span::styled(
+                format!("{} {}!", 
+                    self.translations.get_text("welcome_to"),
+                    self.translations.get_text("tetris_title")
+                ),
+                Style::default().fg(Color::Yellow),
+            )]),
+            Spans::from(""),
+            Spans::from(self.translations.get_text("how_to_play")),
+            Spans::from(""),
+            Spans::from(self.translations.get_text("move_horizontal")),
+            Spans::from(self.translations.get_text("speed_up")),
+            Spans::from(self.translations.get_text("rotate")),
+            Spans::from(self.translations.get_text("hard_drop")),
+            Spans::from(self.translations.get_text("clear_lines")),
+            Spans::from(self.translations.get_text("one_line")),
+            Spans::from(self.translations.get_text("two_lines")),
+            Spans::from(self.translations.get_text("three_lines")),
+            Spans::from(self.translations.get_text("four_lines")),
+            Spans::from(self.translations.get_text("game_ends")),
+            Spans::from(""),
+            Spans::from(self.translations.get_text("quit_control")),
+            Spans::from(self.translations.get_text("press_enter")),
+        ];
+
+        let paragraph = Paragraph::new(welcome_text)
+            .block(Block::default()
+                .borders(Borders::ALL)
+                .title(Span::styled(
+                    self.translations.get_text("tetris_title"),
+                    Style::default().fg(Color::Yellow),
+                )))
+            .alignment(tui::layout::Alignment::Center);
+        f.render_widget(paragraph, area);
+    }
+
+    pub fn render_game<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
         let available_width = area.width as usize;
         let game_width = self.board[0].len() * self.block_width as usize;
         let padding = if available_width > game_width {
