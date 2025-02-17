@@ -112,6 +112,11 @@ impl Tetris {
 
     pub fn handle_input(&mut self, key: KeyCode) -> bool {
         if self.game_over {
+            if key == KeyCode::Char('r') {
+                *self = Self::new();
+                self.game_state = GameState::Playing;
+                return true;
+            }
             return false;
         }
 
@@ -205,6 +210,7 @@ impl Tetris {
             Spans::from(self.translations.get_text("quit_control")),
             Spans::from(self.translations.get_text("press_enter")),
             Spans::from(self.translations.get_text("pause_game")),
+            Spans::from(self.translations.get_text("restart")),
         ];
 
         let paragraph = Paragraph::new(welcome_text)
@@ -263,6 +269,7 @@ impl Tetris {
         
         if self.game_over {
             text.push(Spans::from(self.translations.get_text("game_over")));
+            text.push(Spans::from(self.translations.get_text("press_r_restart")));
         }
 
         let available_height = area.height as usize;

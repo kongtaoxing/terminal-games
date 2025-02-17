@@ -106,6 +106,11 @@ lazy_static! {
         press_p_to_resume.insert(Language::Chinese, "按P或ESC键继续".to_string());
         m.insert("press_p_to_resume", press_p_to_resume);
 
+        let mut restart = HashMap::new();
+        restart.insert(Language::English, "Press R to restart after game over".to_string());
+        restart.insert(Language::Chinese, "失败后按R键重新开始".to_string());
+        m.insert("restart", restart);
+
         m
     };
 } 
