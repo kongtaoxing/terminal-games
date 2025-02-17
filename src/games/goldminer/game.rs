@@ -9,7 +9,7 @@ use tui::{
     Frame,
 };
 
-use crate::games::{compiling::Compiling, goldminer::hook::HookState};
+use crate::{game_manager::CompileLanguage, games::{compiling::Compiling, goldminer::hook::HookState}};
 use crate::games::goldminer::item::{Item, ItemType};
 use crate::translation::{Language, Translations};
 
@@ -472,10 +472,16 @@ impl GoldMiner {
     }
 
     pub fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
-        self.compiling.borrow_mut().render(f, area);
+        if self.game_state == GameState::Paused {
+            self.compiling.borrow_mut().render(f, area);
+        }
     }
 
     pub fn set_language(&mut self, language: Language) {
         self.translations.set_language(language);
+    }
+
+    pub fn set_compile_language(&mut self, lang: CompileLanguage) {
+        self.compiling.borrow_mut().set_language(lang);
     }
 }

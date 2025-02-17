@@ -17,6 +17,13 @@ pub enum GameState {
     Tetris,
 }
 
+#[derive(PartialEq, Clone)]
+pub enum CompileLanguage {
+    Rust,
+    Go,
+    CMake,
+}
+
 pub struct GameManager {
     pub state: GameState,
     goldminer: GoldMiner,
@@ -24,6 +31,8 @@ pub struct GameManager {
     selected_game: usize,
     translations: Translations,
     selecting_language: bool,
+    compile_language: CompileLanguage,
+    selecting_compile_language: bool,
 }
 
 impl GameManager {
@@ -35,6 +44,8 @@ impl GameManager {
             selected_game: 0,
             translations: Translations::new(),
             selecting_language: false,
+            compile_language: CompileLanguage::Rust,
+            selecting_compile_language: false,
         }
     }
 
@@ -58,9 +69,33 @@ impl GameManager {
                         KeyCode::Esc => self.selecting_language = false,
                         _ => {}
                     }
+                } else if self.selecting_compile_language {
+                    match key {
+                        KeyCode::Char('r') => {
+                            self.compile_language = CompileLanguage::Rust;
+                            self.goldminer.set_compile_language(CompileLanguage::Rust);
+                            self.tetris.set_compile_language(CompileLanguage::Rust);
+                            self.selecting_compile_language = false;
+                        }
+                        KeyCode::Char('g') => {
+                            self.compile_language = CompileLanguage::Go;
+                            self.goldminer.set_compile_language(CompileLanguage::Go);
+                            self.tetris.set_compile_language(CompileLanguage::Go);
+                            self.selecting_compile_language = false;
+                        }
+                        KeyCode::Char('m') => {
+                            self.compile_language = CompileLanguage::CMake;
+                            self.goldminer.set_compile_language(CompileLanguage::CMake);
+                            self.tetris.set_compile_language(CompileLanguage::CMake);
+                            self.selecting_compile_language = false;
+                        }
+                        KeyCode::Esc => self.selecting_compile_language = false,
+                        _ => {}
+                    }
                 } else {
                     match key {
                         KeyCode::Char('t') => self.selecting_language = true,
+                        KeyCode::Char('c') => self.selecting_compile_language = true,
                         KeyCode::Char('1') => self.state = GameState::GoldMiner,
                         KeyCode::Char('2') => self.state = GameState::Tetris,
                         KeyCode::Up => {
@@ -138,8 +173,17 @@ impl GameManager {
             Spans::from(self.translations.get_text("controls")),
         ];
 
-        // Add language selection prompt if active
-        if self.selecting_language {
+        if self.selecting_compile_language {
+            menu_text.push(Spans::from(""));
+            menu_text.push(Spans::from(vec![Span::styled(
+                "Select Compile Language / 选择编译语言:",
+                Style::default().fg(Color::Yellow),
+            )]));
+            menu_text.push(Spans::from("R: Rust"));
+            menu_text.push(Spans::from("G: Go"));
+            menu_text.push(Spans::from("M: CMake"));
+            menu_text.push(Spans::from("ESC: Cancel / 取消"));
+        } else if self.selecting_language {
             menu_text.push(Spans::from(""));
             menu_text.push(Spans::from(vec![Span::styled(
                 "Select Language / 选择语言:",
@@ -152,7 +196,15 @@ impl GameManager {
             for line in self.translations.get_text("controls_desc").split('\n') {
                 menu_text.push(Spans::from(line.to_string()));
             }
-            menu_text.push(Spans::from(self.translations.get_text("compiling")));
+            menu_text.push(Spans::from(format!("{} ({})",
+                self.translations.get_text("compiling"),
+                match self.compile_language {
+                    CompileLanguage::Rust => "Rust",
+                    CompileLanguage::Go => "Go",
+                    CompileLanguage::CMake => "CMake",
+                }
+            )));
+            menu_text.push(Spans::from(self.translations.get_text("compiling_language")));
         }
 
         let paragraph = Paragraph::new(menu_text)

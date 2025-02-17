@@ -8,7 +8,7 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use crate::translation::{Language, Translations};
+use crate::{game_manager::CompileLanguage, translation::{Language, Translations}};
 use crate::games::compiling::Compiling;
 use std::cell::RefCell;
 
@@ -287,7 +287,9 @@ impl Tetris {
     }
 
     pub fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
-        self.compiling.borrow_mut().render(f, area);
+        if self.game_state == GameState::Paused {
+            self.compiling.borrow_mut().render(f, area);
+        }
     }
 
     fn move_piece(&mut self, dx: i32, dy: i32) -> bool {
@@ -413,5 +415,9 @@ impl Tetris {
         self.freeze_piece();
         self.clear_lines();
         self.spawn_new_piece();
+    }
+
+    pub fn set_compile_language(&mut self, lang: CompileLanguage) {
+        self.compiling.borrow_mut().set_language(lang);
     }
 }

@@ -37,6 +37,11 @@ lazy_static! {
         compiling.insert(Language::Chinese, "- 游戏中按p或者Esc可暂停游戏并假装编译代码（摸鱼）".to_string());
         m.insert("compiling", compiling);
 
+        let mut compiling_language = HashMap::new();
+        compiling_language.insert(Language::English, "- C: Choose pretend compiling language".to_string());
+        compiling_language.insert(Language::Chinese, "- C: 选择假装编译的语言".to_string());
+        m.insert("compiling_language", compiling_language);
+
         m
     };
 } 
