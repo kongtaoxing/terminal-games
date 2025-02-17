@@ -8,6 +8,7 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
+use crate::translation::{Language, Translations};
 
 // 定义方块形状
 const SHAPES: [[[bool; 4]; 4]; 7] = [
@@ -72,6 +73,7 @@ pub struct Tetris {
     tick_count: u32,
     current_shape: [[bool; 4]; 4],
     block_width: u16,
+    translations: Translations,
 }
 
 impl Tetris {
@@ -87,7 +89,12 @@ impl Tetris {
             tick_count: 0,
             current_shape: SHAPES[piece],
             block_width: 2,
+            translations: Translations::new(),
         }
+    }
+
+    pub fn set_language(&mut self, language: Language) {
+        self.translations.set_language(language);
     }
 
     pub fn handle_input(&mut self, key: KeyCode) -> bool {
@@ -164,9 +171,13 @@ impl Tetris {
         }
 
         text.push(Spans::from(""));
-        text.push(Spans::from(format!("{}Score: {}", " ".repeat(padding), self.score)));
+        text.push(Spans::from(format!("{} {}", 
+            self.translations.get_text("score"),
+            self.score
+        )));
+        
         if self.game_over {
-            text.push(Spans::from(format!("{}Game Over!", " ".repeat(padding))));
+            text.push(Spans::from(self.translations.get_text("game_over")));
         }
 
         let available_height = area.height as usize;
@@ -181,7 +192,10 @@ impl Tetris {
         let paragraph = Paragraph::new(visible_text)
             .block(Block::default()
                 .borders(Borders::ALL)
-                .title(Span::styled("Tetris", Style::default().fg(Color::Cyan))))
+                .title(Span::styled(
+                    self.translations.get_text("tetris_title"),
+                    Style::default().fg(Color::Cyan)
+                )))
             .alignment(tui::layout::Alignment::Left);
 
         f.render_widget(paragraph, area);

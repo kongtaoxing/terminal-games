@@ -11,6 +11,7 @@ use tui::{
 
 use crate::games::goldminer::hook::HookState;
 use crate::games::goldminer::item::{Item, ItemType};
+use crate::translation::{Language, Translations};
 
 // 添加游戏状态枚举
 #[derive(PartialEq)]
@@ -33,6 +34,7 @@ pub struct GoldMiner {
     pub level: i32,
     pub items_collected: i32,
     pub game_state: GameState, // 添加游戏状态字段
+    translations: Translations,  // 添加translations字段
 }
 
 impl GoldMiner {
@@ -60,6 +62,7 @@ impl GoldMiner {
             level: 1,
             items_collected: 0,
             game_state: GameState::Welcome, // 初始状态为欢迎界面
+            translations: Translations::new(),
         };
         game.generate_items();
         game
@@ -268,37 +271,40 @@ impl GoldMiner {
     fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
         let welcome_text = vec![
             Spans::from(vec![Span::styled(
-                "Welcome to Gold Miner!",
+                format!("{} {}!", 
+                    self.translations.get_text("welcome_to"),
+                    self.translations.get_text("goldminer_title")
+                ),
                 Style::default().fg(Color::Yellow),
             )]),
             Spans::from(""),
-            Spans::from("How to Play:"),
+            Spans::from(self.translations.get_text("how_to_play")),
             Spans::from(""),
-            Spans::from(" 1. The hook swings automatically"),
-            Spans::from(" 2. Press SPACE to release the hook"),
-            Spans::from(" 3. Catch gold (◆/♦) for points:"),
-            Spans::from("    - Big Gold (◆) = 200 points"),
-            Spans::from("    - Small Gold (♦) = 100 points"),
-            Spans::from(" 4. Avoid stones (■/□) (-50 points)"),
-            Spans::from(" 5. Collect all gold to advance to next level"),
-            Spans::from(" 6. Higher levels have:"),
-            Spans::from("    - Faster hook movement"),
-            Spans::from("    - Heavier items"),
-            Spans::from("    - More obstacles"),
+            Spans::from(self.translations.get_text("hook_swing")),
+            Spans::from(self.translations.get_text("press_space")),
+            Spans::from(self.translations.get_text("catch_gold")),
+            Spans::from(self.translations.get_text("big_gold_points")),
+            Spans::from(self.translations.get_text("small_gold_points")),
+            Spans::from(self.translations.get_text("avoid_stones")),
+            Spans::from(self.translations.get_text("collect_all_gold")),
+            Spans::from(self.translations.get_text("higher_levels")),
+            Spans::from(self.translations.get_text("faster_hook")),
+            Spans::from(self.translations.get_text("heavier_items")),
+            Spans::from(self.translations.get_text("more_obstacles")),
             Spans::from(""),
-            Spans::from(" Controls:"),
-            Spans::from(" - SPACE: Release/Retract hook"),
-            Spans::from(" - Q: Quit game"),
+            Spans::from(self.translations.get_text("controls_title")),
+            Spans::from(self.translations.get_text("space_control")),
+            Spans::from(self.translations.get_text("quit_control")),
             Spans::from(""),
             Spans::from(vec![Span::styled(
-                "Press ENTER to start the game!",
+                self.translations.get_text("press_enter"),
                 Style::default().fg(Color::Green),
             )]),
         ];
 
         let paragraph = Paragraph::new(welcome_text)
             .block(Block::default().borders(Borders::ALL).title(Span::styled(
-                "Gold Miner",
+                self.translations.get_text("goldminer_title"),
                 Style::default().fg(Color::Yellow),
             )))
             .alignment(tui::layout::Alignment::Center);
@@ -340,11 +346,23 @@ impl GoldMiner {
         let mut content = vec![];
 
         content.push(Spans::from(vec![
-            Span::styled("Level: ", Style::default().fg(Color::Yellow)),
-            Span::styled(self.level.to_string(), Style::default().fg(Color::Green)),
+            Span::styled(
+                format!("{} ", self.translations.get_text("level")),
+                Style::default().fg(Color::Yellow)
+            ),
+            Span::styled(
+                self.level.to_string(),
+                Style::default().fg(Color::Green)
+            ),
             Span::raw("  "),
-            Span::styled("Score: ", Style::default().fg(Color::Yellow)),
-            Span::styled(self.score.to_string(), Style::default().fg(Color::Green)),
+            Span::styled(
+                format!("{} ", self.translations.get_text("score")),
+                Style::default().fg(Color::Yellow)
+            ),
+            Span::styled(
+                self.score.to_string(),
+                Style::default().fg(Color::Green)
+            ),
         ]));
 
         for y in 0..area.height {
@@ -426,10 +444,17 @@ impl GoldMiner {
             content.push(Spans::from(line_spans));
         }
 
-        let paragraph =
-            Paragraph::new(content).block(Block::default().borders(Borders::ALL).title(
-                Span::styled("Gold Miner", Style::default().fg(Color::Yellow)),
+        let paragraph = Paragraph::new(content)
+            .block(Block::default().borders(Borders::ALL).title(
+                Span::styled(
+                    self.translations.get_text("goldminer_title"),
+                    Style::default().fg(Color::Yellow)
+                ),
             ));
         f.render_widget(paragraph, area);
+    }
+
+    pub fn set_language(&mut self, language: Language) {
+        self.translations.set_language(language);
     }
 }
