@@ -1,6 +1,7 @@
 mod common;
 mod goldminer;
 mod tetris;
+mod snake;
 
 pub use common::Language;
 
@@ -8,7 +9,7 @@ use std::collections::HashMap;
 use common::COMMON_TRANSLATIONS;
 use goldminer::GOLDMINER_TRANSLATIONS;
 use tetris::TETRIS_TRANSLATIONS;
-
+use snake::SNAKE_TRANSLATIONS;
 pub struct Translations {
     texts: HashMap<String, HashMap<Language, String>>,
     current_language: Language,
@@ -33,7 +34,7 @@ impl Translations {
         texts.extend(COMMON_TRANSLATIONS.iter().map(|(k, v)| (k.to_string(), v.clone())));
         texts.extend(GOLDMINER_TRANSLATIONS.iter().map(|(k, v)| (k.to_string(), v.clone())));
         texts.extend(TETRIS_TRANSLATIONS.iter().map(|(k, v)| (k.to_string(), v.clone())));
-
+        texts.extend(SNAKE_TRANSLATIONS.iter().map(|(k, v)| (k.to_string(), v.clone())));
         Self {
             texts,
             current_language: Self::detect_system_language(),

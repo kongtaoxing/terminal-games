@@ -1,4 +1,4 @@
-use crate::games::{goldminer::GoldMiner, tetris::Tetris};
+use crate::games::{goldminer::GoldMiner, tetris::Tetris, snake::Snake};
 use crossterm::event::KeyCode;
 use tui::{
     backend::Backend,
@@ -15,6 +15,7 @@ pub enum GameState {
     MainMenu,
     GoldMiner,
     Tetris,
+    Snake,
 }
 
 #[derive(PartialEq, Clone)]
@@ -28,6 +29,7 @@ pub struct GameManager {
     pub state: GameState,
     goldminer: GoldMiner,
     tetris: Tetris,
+    snake: Snake,
     selected_game: usize,
     translations: Translations,
     selecting_language: bool,
@@ -41,6 +43,7 @@ impl GameManager {
             state: GameState::MainMenu,
             goldminer: GoldMiner::new(),
             tetris: Tetris::new(),
+            snake: Snake::new(),
             selected_game: 0,
             translations: Translations::new(),
             selecting_language: false,
@@ -98,13 +101,14 @@ impl GameManager {
                         KeyCode::Char('c') => self.selecting_compile_language = true,
                         KeyCode::Char('1') => self.state = GameState::GoldMiner,
                         KeyCode::Char('2') => self.state = GameState::Tetris,
+                        KeyCode::Char('3') => self.state = GameState::Snake,
                         KeyCode::Up => {
                             if self.selected_game > 0 {
                                 self.selected_game -= 1;
                             }
                         }
                         KeyCode::Down => {
-                            if self.selected_game < 1 {
+                            if self.selected_game < 2 {
                                 self.selected_game += 1;
                             }
                         }
@@ -112,6 +116,7 @@ impl GameManager {
                             self.state = match self.selected_game {
                                 0 => GameState::GoldMiner,
                                 1 => GameState::Tetris,
+                                2 => GameState::Snake,
                                 _ => GameState::MainMenu,
                             };
                         }
@@ -125,6 +130,9 @@ impl GameManager {
             GameState::Tetris => {
                 let _ = self.tetris.handle_input(key);
             }
+            GameState::Snake => {
+                let _ = self.snake.handle_input(key);
+            }
         }
     }
 
@@ -133,6 +141,7 @@ impl GameManager {
             GameState::MainMenu => {}
             GameState::GoldMiner => self.goldminer.update(),
             GameState::Tetris => self.tetris.update(),
+            GameState::Snake => self.snake.update(),
         }
     }
 
@@ -141,6 +150,7 @@ impl GameManager {
             GameState::MainMenu => self.render_main_menu(f, area),
             GameState::GoldMiner => self.goldminer.render(f, area),
             GameState::Tetris => self.tetris.render(f, area),
+            GameState::Snake => self.snake.render(f, area),
         }
     }
 
@@ -164,6 +174,14 @@ impl GameManager {
             Spans::from(vec![Span::styled(
                 format!(" 2. {}", self.translations.get_text("tetris_title")),
                 Style::default().fg(if self.selected_game == 1 {
+                    Color::Green
+                } else {
+                    Color::White
+                }),
+            )]),
+            Spans::from(vec![Span::styled(
+                format!(" 3. {}", self.translations.get_text("snake_title")),
+                Style::default().fg(if self.selected_game == 2 {
                     Color::Green
                 } else {
                     Color::White
