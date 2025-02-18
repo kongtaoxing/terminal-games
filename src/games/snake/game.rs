@@ -34,10 +34,23 @@ struct Position {
     y: i32,
 }
 
+#[derive(Clone, PartialEq)]
+enum FoodType {
+    Apple,  // 大食物
+    Candy,  // 小食物
+}
+
+#[derive(Clone, PartialEq)]
+struct Food {
+    position: Position,
+    food_type: FoodType,
+    positions: Vec<Position>, // 用于存储大食物的所有位置
+}
+
 pub struct Snake {
     // board: Vec<Vec<bool>>,
     snake_body: VecDeque<Position>,
-    food_position: Position,
+    food: Food,
     direction: Direction,
     game_over: bool,
     score: u32,
@@ -53,7 +66,11 @@ impl Snake {
         let mut snake = Self {
             // board: vec![vec![false; 20]; 20],
             snake_body: VecDeque::new(),
-            food_position: Position { x: 0, y: 0 },
+            food: Food {
+                position: Position { x: 0, y: 0 },
+                food_type: FoodType::Apple,
+                positions: Vec::new(),
+            },
             direction: Direction::Right,
             game_over: false,
             score: 0,
@@ -64,7 +81,6 @@ impl Snake {
             next_direction: Direction::Right,
         };
         
-        // 初始化蛇的位置
         snake.snake_body.push_back(Position { x: 10, y: 10 });
         snake.spawn_food();
         snake
@@ -150,6 +166,57 @@ impl Snake {
         }
     }
 
+    fn spawn_food(&mut self) {
+        let mut rng = rand::thread_rng();
+        
+        // 随机选择食物类型
+        self.food.food_type = if rng.gen_bool(0.7) {
+            FoodType::Apple  // 70%概率生成苹果
+        } else {
+            FoodType::Candy  // 30%概率生成糖果
+        };
+
+        loop {
+            let x = rng.gen_range(0..20);
+            let y = rng.gen_range(0..20);
+            let base_pos = Position { x, y };
+
+            // 检查是否有足够的空间放置食物
+            match self.food.food_type {
+                FoodType::Apple => {
+                    // 检查2x2的空间
+                    let positions = vec![
+                        base_pos.clone(),
+                        Position { x: base_pos.x + 1, y: base_pos.y },
+                        Position { x: base_pos.x, y: base_pos.y + 1 },
+                        Position { x: base_pos.x + 1, y: base_pos.y + 1 },
+                    ];
+
+                    if x < 19 && y < 19 && positions.iter().all(|pos| {
+                        !self.snake_body.iter().any(|p| p.x == pos.x && p.y == pos.y)
+                    }) {
+                        self.food.position = base_pos;
+                        self.food.positions = positions;
+                        break;
+                    }
+                },
+                FoodType::Candy => {
+                    if !self.snake_body.iter().any(|p| p.x == x && p.y == y) {
+                        self.food.position = base_pos.clone();
+                        self.food.positions = vec![base_pos];
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    fn check_food_collision(&mut self, head: &Position) -> bool {
+        self.food.positions.iter().any(|food_pos| {
+            food_pos.x == head.x && food_pos.y == head.y
+        })
+    }
+
     fn move_snake(&mut self) {
         if let Some(head) = self.snake_body.front() {
             let new_head = match self.direction {
@@ -167,26 +234,17 @@ impl Snake {
             }
 
             // 检查是否吃到食物
-            if new_head.x == self.food_position.x && new_head.y == self.food_position.y {
-                self.score += 100;
+            if self.check_food_collision(&new_head) {
+                match self.food.food_type {
+                    FoodType::Apple => self.score += 50,  // 苹果分值降低
+                    FoodType::Candy => self.score += 150, // 糖果分值提高
+                }
                 self.spawn_food();
             } else {
                 self.snake_body.pop_back();
             }
 
             self.snake_body.push_front(new_head);
-        }
-    }
-
-    fn spawn_food(&mut self) {
-        let mut rng = rand::thread_rng();
-        loop {
-            let x = rng.gen_range(0..20);
-            let y = rng.gen_range(0..20);
-            if !self.snake_body.iter().any(|p| p.x == x && p.y == y) {
-                self.food_position = Position { x, y };
-                break;
-            }
         }
     }
 
@@ -211,7 +269,9 @@ impl Snake {
             Spans::from(self.translations.get_text("how_to_play")),
             Spans::from(""),
             Spans::from(self.translations.get_text("move_snake")),
-            Spans::from(self.translations.get_text("eat_food")),
+            Spans::from(self.translations.get_text("eat_food_title")),
+            Spans::from(self.translations.get_text("apple_desc")),
+            Spans::from(self.translations.get_text("candy_desc")),
             Spans::from(self.translations.get_text("avoid_walls")),
             Spans::from(""),
             Spans::from(self.translations.get_text("press_enter")),
@@ -246,8 +306,12 @@ impl Snake {
         for y in 0..20 {
             let mut line = String::new();
             for x in 0..20 {
-                if x as i32 == self.food_position.x && y as i32 == self.food_position.y {
-                    line.push_str("🍎"); // 食物
+                let current_pos = Position { x: x as i32, y: y as i32 };
+                if self.food.positions.contains(&current_pos) {
+                    match self.food.food_type {
+                        FoodType::Apple => line.push_str("🍎"), // 苹果
+                        FoodType::Candy => line.push_str("🍬"), // 糖果
+                    }
                 } else if display_board[y][x] {
                     line.push_str("██"); // 蛇身
                 } else {

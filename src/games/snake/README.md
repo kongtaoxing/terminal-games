@@ -6,9 +6,12 @@ Snake is a classic arcade game where players control a snake to eat food and gro
 
 1. **Basic Gameplay**
    - Control a snake that moves continuously in the game area
-   - Eat food (🍎) to grow longer and earn points
+   - Eat different types of food to grow longer and earn points:
+     * Apple (🍎): Large food (2x2 grid), 50 points
+     * Candy (🍬): Small food (1x1 grid), 150 points
    - Avoid hitting walls and the snake's own body
-   - Each food eaten adds 100 points to your score
+   - Apples appear more frequently (70% chance)
+   - Candies are rarer but worth more points (30% chance)
 
 2. **Controls**
    - **LEFT Arrow** or **A**: Turn snake left
@@ -21,7 +24,8 @@ Snake is a classic arcade game where players control a snake to eat food and gro
 
 3. **Game Elements**
    - **Snake Body (██)**: The snake's body segments
-   - **Food (🍎)**: Appears randomly on the board
+   - **Apple (🍎)**: Large food that takes up 4 squares
+   - **Candy (🍬)**: Small food that takes up 1 square
    - **Game Area (··)**: Empty spaces where the snake can move
 
 4. **Game Over Conditions**
@@ -33,17 +37,19 @@ Snake is a classic arcade game where players control a snake to eat food and gro
 
 1. **Plan Your Route**
    - Think ahead about your path to the food
-   - Avoid getting trapped in corners
-   - Leave enough space for your growing body
+   - Be extra careful when approaching apples as they take up more space
+   - Consider the risk/reward of going for candies vs apples
 
 2. **Strategic Movement**
    - Don't make sudden turns that might cause self-collision
    - Use the game area efficiently
    - Keep track of your snake's length as it grows
+   - Plan carefully when eating large apples as they require more space
 
 ## Features
 
 - 20x20 game board
+- Two types of food with different sizes and scores
 - Real-time movement and controls
 - Score tracking
 - Multilingual support (English/Chinese)
