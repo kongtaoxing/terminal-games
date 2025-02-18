@@ -130,10 +130,10 @@ impl Tetris {
                 }
             }
             GameState::Playing => match key {
-                KeyCode::Left => self.move_piece(-1, 0),
-                KeyCode::Right => self.move_piece(1, 0),
-                KeyCode::Down => self.move_piece(0, 1),
-                KeyCode::Up => {
+                KeyCode::Left | KeyCode::Char('a') => self.move_piece(-1, 0),
+                KeyCode::Right | KeyCode::Char('d') => self.move_piece(1, 0),
+                KeyCode::Down | KeyCode::Char('s') => self.move_piece(0, 1),
+                KeyCode::Up | KeyCode::Char('w') => {
                     self.rotate_piece();
                     true
                 }

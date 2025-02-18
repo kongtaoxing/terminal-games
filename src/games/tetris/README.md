@@ -10,9 +10,9 @@ Tetris is a classic puzzle game where players must strategically arrange falling
    - Complete horizontal lines to clear them and score points
 
 2. **Controls**
-   - **LEFT/RIGHT Arrow**: Move block horizontally
-   - **DOWN Arrow**: Speed up block descent
-   - **UP Arrow**: Rotate block
+   - **LEFT/RIGHT Arrow** or **A/D**: Move block horizontally
+   - **DOWN Arrow** or **S**: Speed up block descent
+   - **UP Arrow** or **W**: Rotate block
    - **SPACE**: Hard drop (instantly drop block)
    - **R**: Restart after game over 
 

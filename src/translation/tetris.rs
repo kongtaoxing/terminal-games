@@ -32,18 +32,18 @@ lazy_static! {
         m.insert("how_to_play", how_to_play);
 
         let mut move_horizontal = HashMap::new();
-        move_horizontal.insert(Language::English, "1. Use LEFT/RIGHT Arrow to move block horizontally".to_string());
-        move_horizontal.insert(Language::Chinese, "1. 使用左右箭头键左右移动方块".to_string());
+        move_horizontal.insert(Language::English, "1. Use LEFT/RIGHT Arrow or A/D to move block horizontally".to_string());
+        move_horizontal.insert(Language::Chinese, "1. 使用左右箭头键或A/D键左右移动方块".to_string());
         m.insert("move_horizontal", move_horizontal);
 
         let mut speed_up = HashMap::new();
-        speed_up.insert(Language::English, "2. Use DOWN Arrow to speed up block descent".to_string());
-        speed_up.insert(Language::Chinese, "2. 使用向下箭头键加速方块下降".to_string());
+        speed_up.insert(Language::English, "2. Use DOWN Arrow or S to speed up block descent".to_string());
+        speed_up.insert(Language::Chinese, "2. 使用向下箭头键或S键加速方块下降".to_string());
         m.insert("speed_up", speed_up);
 
         let mut rotate = HashMap::new();
-        rotate.insert(Language::English, "3. Use UP Arrow to rotate block".to_string());
-        rotate.insert(Language::Chinese, "3. 使用向上箭头键旋转方块".to_string());
+        rotate.insert(Language::English, "3. Use UP Arrow or W to rotate block".to_string());
+        rotate.insert(Language::Chinese, "3. 使用向上箭头键或W键旋转方块".to_string());
         m.insert("rotate", rotate);
 
         let mut hard_drop = HashMap::new();
