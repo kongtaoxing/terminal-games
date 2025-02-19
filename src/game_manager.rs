@@ -1,4 +1,4 @@
-use crate::games::{goldminer::GoldMiner, tetris::Tetris, snake::Snake};
+use crate::games::{goldminer::GoldMiner, tetris::Tetris, snake::Snake, twenty_forty_eight::TwentyFortyEight};
 use crossterm::event::KeyCode;
 use tui::{
     backend::Backend,
@@ -16,6 +16,7 @@ pub enum GameState {
     GoldMiner,
     Tetris,
     Snake,
+    TwentyFortyEight,
 }
 
 #[derive(PartialEq, Clone)]
@@ -30,6 +31,7 @@ pub struct GameManager {
     goldminer: GoldMiner,
     tetris: Tetris,
     snake: Snake,
+    twenty_forty_eight: TwentyFortyEight,
     selected_game: usize,
     translations: Translations,
     selecting_language: bool,
@@ -44,6 +46,7 @@ impl GameManager {
             goldminer: GoldMiner::new(),
             tetris: Tetris::new(),
             snake: Snake::new(),
+            twenty_forty_eight: TwentyFortyEight::new(),
             selected_game: 0,
             translations: Translations::new(),
             selecting_language: false,
@@ -61,12 +64,14 @@ impl GameManager {
                             self.translations.set_language(Language::English);
                             self.goldminer.set_language(Language::English);
                             self.tetris.set_language(Language::English);
+                            self.twenty_forty_eight.set_language(Language::English);
                             self.selecting_language = false;
                         }
                         KeyCode::Char('c') => {
                             self.translations.set_language(Language::Chinese);
                             self.goldminer.set_language(Language::Chinese);
                             self.tetris.set_language(Language::Chinese);
+                            self.twenty_forty_eight.set_language(Language::Chinese);
                             self.selecting_language = false;
                         }
                         KeyCode::Esc => self.selecting_language = false,
@@ -78,18 +83,21 @@ impl GameManager {
                             self.compile_language = CompileLanguage::Rust;
                             self.goldminer.set_compile_language(CompileLanguage::Rust);
                             self.tetris.set_compile_language(CompileLanguage::Rust);
+                            self.twenty_forty_eight.set_compile_language(CompileLanguage::Rust);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Char('g') => {
                             self.compile_language = CompileLanguage::Go;
                             self.goldminer.set_compile_language(CompileLanguage::Go);
                             self.tetris.set_compile_language(CompileLanguage::Go);
+                            self.twenty_forty_eight.set_compile_language(CompileLanguage::Go);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Char('m') => {
                             self.compile_language = CompileLanguage::CMake;
                             self.goldminer.set_compile_language(CompileLanguage::CMake);
                             self.tetris.set_compile_language(CompileLanguage::CMake);
+                            self.twenty_forty_eight.set_compile_language(CompileLanguage::CMake);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Esc => self.selecting_compile_language = false,
@@ -102,13 +110,14 @@ impl GameManager {
                         KeyCode::Char('1') => self.state = GameState::GoldMiner,
                         KeyCode::Char('2') => self.state = GameState::Tetris,
                         KeyCode::Char('3') => self.state = GameState::Snake,
+                        KeyCode::Char('4') => self.state = GameState::TwentyFortyEight,
                         KeyCode::Up => {
                             if self.selected_game > 0 {
                                 self.selected_game -= 1;
                             }
                         }
                         KeyCode::Down => {
-                            if self.selected_game < 2 {
+                            if self.selected_game < 3 {
                                 self.selected_game += 1;
                             }
                         }
@@ -117,6 +126,7 @@ impl GameManager {
                                 0 => GameState::GoldMiner,
                                 1 => GameState::Tetris,
                                 2 => GameState::Snake,
+                                3 => GameState::TwentyFortyEight,
                                 _ => GameState::MainMenu,
                             };
                         }
@@ -133,6 +143,9 @@ impl GameManager {
             GameState::Snake => {
                 let _ = self.snake.handle_input(key);
             }
+            GameState::TwentyFortyEight => {
+                let _ = self.twenty_forty_eight.handle_input(key);
+            }
         }
     }
 
@@ -142,6 +155,7 @@ impl GameManager {
             GameState::GoldMiner => self.goldminer.update(),
             GameState::Tetris => self.tetris.update(),
             GameState::Snake => self.snake.update(),
+            GameState::TwentyFortyEight => self.twenty_forty_eight.update(),
         }
     }
 
@@ -151,6 +165,7 @@ impl GameManager {
             GameState::GoldMiner => self.goldminer.render(f, area),
             GameState::Tetris => self.tetris.render(f, area),
             GameState::Snake => self.snake.render(f, area),
+            GameState::TwentyFortyEight => self.twenty_forty_eight.render(f, area),
         }
     }
 
@@ -182,6 +197,14 @@ impl GameManager {
             Spans::from(vec![Span::styled(
                 format!(" 3. {}", self.translations.get_text("snake_title")),
                 Style::default().fg(if self.selected_game == 2 {
+                    Color::Green
+                } else {
+                    Color::White
+                }),
+            )]),
+            Spans::from(vec![Span::styled(
+                format!(" 4. {}", self.translations.get_text("twenty_forty_eight_title")),
+                Style::default().fg(if self.selected_game == 3 {
                     Color::Green
                 } else {
                     Color::White
