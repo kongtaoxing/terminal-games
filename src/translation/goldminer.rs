@@ -1,6 +1,6 @@
 use super::Language;
-use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 lazy_static! {
     pub static ref GOLDMINER_TRANSLATIONS: HashMap<&'static str, HashMap<Language, String>> = {
@@ -103,7 +103,7 @@ lazy_static! {
         m.insert("press_enter", press_enter);
 
         m
-        
-        
+
+
     };
-} 
+}

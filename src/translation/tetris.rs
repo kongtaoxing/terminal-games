@@ -1,6 +1,6 @@
 use super::Language;
-use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 lazy_static! {
     pub static ref TETRIS_TRANSLATIONS: HashMap<&'static str, HashMap<Language, String>> = {
@@ -32,29 +32,53 @@ lazy_static! {
         m.insert("how_to_play", how_to_play);
 
         let mut move_horizontal = HashMap::new();
-        move_horizontal.insert(Language::English, "1. Use LEFT/RIGHT Arrow or A/D to move block horizontally".to_string());
-        move_horizontal.insert(Language::Chinese, "1. 使用左右箭头键或A/D键左右移动方块".to_string());
+        move_horizontal.insert(
+            Language::English,
+            "1. Use LEFT/RIGHT Arrow or A/D to move block horizontally".to_string(),
+        );
+        move_horizontal.insert(
+            Language::Chinese,
+            "1. 使用左右箭头键或A/D键左右移动方块".to_string(),
+        );
         m.insert("move_horizontal", move_horizontal);
 
         let mut speed_up = HashMap::new();
-        speed_up.insert(Language::English, "2. Use DOWN Arrow or S to speed up block descent".to_string());
-        speed_up.insert(Language::Chinese, "2. 使用向下箭头键或S键加速方块下降".to_string());
+        speed_up.insert(
+            Language::English,
+            "2. Use DOWN Arrow or S to speed up block descent".to_string(),
+        );
+        speed_up.insert(
+            Language::Chinese,
+            "2. 使用向下箭头键或S键加速方块下降".to_string(),
+        );
         m.insert("speed_up", speed_up);
 
         let mut rotate = HashMap::new();
-        rotate.insert(Language::English, "3. Use UP Arrow or W to rotate block".to_string());
-        rotate.insert(Language::Chinese, "3. 使用向上箭头键或W键旋转方块".to_string());
+        rotate.insert(
+            Language::English,
+            "3. Use UP Arrow or W to rotate block".to_string(),
+        );
+        rotate.insert(
+            Language::Chinese,
+            "3. 使用向上箭头键或W键旋转方块".to_string(),
+        );
         m.insert("rotate", rotate);
 
         let mut hard_drop = HashMap::new();
-        hard_drop.insert(Language::English, "4. Press SPACE to hard drop block".to_string());
+        hard_drop.insert(
+            Language::English,
+            "4. Press SPACE to hard drop block".to_string(),
+        );
         hard_drop.insert(Language::Chinese, "4. 按空格键瞬间放下方块".to_string());
         m.insert("hard_drop", hard_drop);
 
         let mut clear_lines = HashMap::new();
-        clear_lines.insert(Language::English, "5. Clear lines to score points".to_string());
+        clear_lines.insert(
+            Language::English,
+            "5. Clear lines to score points".to_string(),
+        );
         clear_lines.insert(Language::Chinese, "5. 清除行以获得分数".to_string());
-        m.insert("clear_lines", clear_lines); 
+        m.insert("clear_lines", clear_lines);
 
         let mut one_line = HashMap::new();
         one_line.insert(Language::English, "1 line cleared: 100 points".to_string());
@@ -77,8 +101,14 @@ lazy_static! {
         m.insert("four_lines", four_lines);
 
         let mut game_ends = HashMap::new();
-        game_ends.insert(Language::English, "Game ends when new blocks can't enter the playing field".to_string());
-        game_ends.insert(Language::Chinese, "当新方块无法进入游戏区域时游戏结束".to_string());
+        game_ends.insert(
+            Language::English,
+            "Game ends when new blocks can't enter the playing field".to_string(),
+        );
+        game_ends.insert(
+            Language::Chinese,
+            "当新方块无法进入游戏区域时游戏结束".to_string(),
+        );
         m.insert("game_ends", game_ends);
 
         let mut quit_control = HashMap::new();
@@ -92,7 +122,10 @@ lazy_static! {
         m.insert("press_enter", press_enter);
 
         let mut pause_game = HashMap::new();
-        pause_game.insert(Language::English, "Press P or ESC to pause Game".to_string());
+        pause_game.insert(
+            Language::English,
+            "Press P or ESC to pause Game".to_string(),
+        );
         pause_game.insert(Language::Chinese, "按P或ESC键暂停游戏".to_string());
         m.insert("pause_game", pause_game);
 
@@ -107,10 +140,13 @@ lazy_static! {
         m.insert("press_p_to_resume", press_p_to_resume);
 
         let mut restart = HashMap::new();
-        restart.insert(Language::English, "Press R to restart after game over".to_string());
+        restart.insert(
+            Language::English,
+            "Press R to restart after game over".to_string(),
+        );
         restart.insert(Language::Chinese, "失败后按R键重新开始".to_string());
         m.insert("restart", restart);
 
         m
     };
-} 
+}

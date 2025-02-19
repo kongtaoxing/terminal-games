@@ -93,12 +93,13 @@ impl Compiling {
             ],
         };
 
-        self.messages.extend(compile_messages.iter().map(|&s| s.to_string()));
+        self.messages
+            .extend(compile_messages.iter().map(|&s| s.to_string()));
     }
 
     pub fn update(&mut self) {
         self.tick_count += 1;
-        
+
         // 每50ms (假设update每10ms调用一次) 更新一次消息
         if self.tick_count % 5 == 0 && !self.messages.is_empty() {
             let first_msg = self.messages.pop_front().unwrap();
@@ -109,24 +110,24 @@ impl Compiling {
     pub fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         // 根据区域高度确定显示的消息数量
         let visible_lines = (area.height as usize).saturating_sub(2);
-        self.display_messages = self.messages
+        self.display_messages = self
+            .messages
             .iter()
             .take(visible_lines)
             .map(|msg| msg.to_string())
             .collect();
 
-        let spans: Vec<Spans> = self.display_messages
+        let spans: Vec<Spans> = self
+            .display_messages
             .iter()
             .map(|msg| {
                 let mut spans = vec![];
-                
+
                 match self.current_language {
                     CompileLanguage::Rust => {
                         if msg.starts_with("Compiling") {
-                            spans.push(Span::styled(
-                                "Compiling",
-                                Style::default().fg(Color::Green),
-                            ));
+                            spans
+                                .push(Span::styled("Compiling", Style::default().fg(Color::Green)));
                             spans.push(Span::raw(" "));
                             spans.push(Span::raw(msg.strip_prefix("Compiling ").unwrap_or(msg)));
                         } else {
@@ -135,10 +136,7 @@ impl Compiling {
                     }
                     CompileLanguage::Go => {
                         if msg.starts_with("go:") {
-                            spans.push(Span::styled(
-                                "go:",
-                                Style::default().fg(Color::Cyan),
-                            ));
+                            spans.push(Span::styled("go:", Style::default().fg(Color::Cyan)));
                             spans.push(Span::raw(" "));
                             spans.push(Span::raw(msg.strip_prefix("go: ").unwrap_or(msg)));
                         } else {
@@ -147,10 +145,7 @@ impl Compiling {
                     }
                     CompileLanguage::CMake => {
                         if msg.starts_with("--") {
-                            spans.push(Span::styled(
-                                "--",
-                                Style::default().fg(Color::Yellow),
-                            ));
+                            spans.push(Span::styled("--", Style::default().fg(Color::Yellow)));
                             spans.push(Span::raw(" "));
                             spans.push(Span::raw(msg.strip_prefix("-- ").unwrap_or(msg)));
                         } else {
@@ -158,7 +153,7 @@ impl Compiling {
                         }
                     }
                 }
-                
+
                 Spans::from(spans)
             })
             .collect();
@@ -169,10 +164,8 @@ impl Compiling {
             CompileLanguage::CMake => "Configuring CMake Project",
         };
 
-        let paragraph = Paragraph::new(spans)
-            .block(Block::default()
-                .borders(Borders::ALL)
-                .title(title));
+        let paragraph =
+            Paragraph::new(spans).block(Block::default().borders(Borders::ALL).title(title));
 
         f.render_widget(paragraph, area);
     }

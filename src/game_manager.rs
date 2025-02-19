@@ -1,4 +1,7 @@
-use crate::games::{goldminer::GoldMiner, tetris::Tetris, snake::Snake, twenty_forty_eight::TwentyFortyEight};
+use crate::games::{
+    goldminer::GoldMiner, snake::Snake, tetris::Tetris, twenty_forty_eight::TwentyFortyEight,
+};
+use crate::translation::{Language, Translations};
 use crossterm::event::KeyCode;
 use tui::{
     backend::Backend,
@@ -8,7 +11,6 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use crate::translation::{Language, Translations};
 
 #[derive(PartialEq)]
 pub enum GameState {
@@ -83,21 +85,24 @@ impl GameManager {
                             self.compile_language = CompileLanguage::Rust;
                             self.goldminer.set_compile_language(CompileLanguage::Rust);
                             self.tetris.set_compile_language(CompileLanguage::Rust);
-                            self.twenty_forty_eight.set_compile_language(CompileLanguage::Rust);
+                            self.twenty_forty_eight
+                                .set_compile_language(CompileLanguage::Rust);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Char('g') => {
                             self.compile_language = CompileLanguage::Go;
                             self.goldminer.set_compile_language(CompileLanguage::Go);
                             self.tetris.set_compile_language(CompileLanguage::Go);
-                            self.twenty_forty_eight.set_compile_language(CompileLanguage::Go);
+                            self.twenty_forty_eight
+                                .set_compile_language(CompileLanguage::Go);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Char('m') => {
                             self.compile_language = CompileLanguage::CMake;
                             self.goldminer.set_compile_language(CompileLanguage::CMake);
                             self.tetris.set_compile_language(CompileLanguage::CMake);
-                            self.twenty_forty_eight.set_compile_language(CompileLanguage::CMake);
+                            self.twenty_forty_eight
+                                .set_compile_language(CompileLanguage::CMake);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Esc => self.selecting_compile_language = false,
@@ -203,7 +208,10 @@ impl GameManager {
                 }),
             )]),
             Spans::from(vec![Span::styled(
-                format!(" 4. {}", self.translations.get_text("twenty_forty_eight_title")),
+                format!(
+                    " 4. {}",
+                    self.translations.get_text("twenty_forty_eight_title")
+                ),
                 Style::default().fg(if self.selected_game == 3 {
                     Color::Green
                 } else {
@@ -237,7 +245,8 @@ impl GameManager {
             for line in self.translations.get_text("controls_desc").split('\n') {
                 menu_text.push(Spans::from(line.to_string()));
             }
-            menu_text.push(Spans::from(format!("{} ({})",
+            menu_text.push(Spans::from(format!(
+                "{} ({})",
                 self.translations.get_text("compiling"),
                 match self.compile_language {
                     CompileLanguage::Rust => "Rust",
@@ -245,7 +254,9 @@ impl GameManager {
                     CompileLanguage::CMake => "CMake",
                 }
             )));
-            menu_text.push(Spans::from(self.translations.get_text("compiling_language")));
+            menu_text.push(Spans::from(
+                self.translations.get_text("compiling_language"),
+            ));
         }
 
         let paragraph = Paragraph::new(menu_text)

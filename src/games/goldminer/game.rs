@@ -9,9 +9,12 @@ use tui::{
     Frame,
 };
 
-use crate::{game_manager::CompileLanguage, games::{compiling::Compiling, goldminer::hook::HookState}};
 use crate::games::goldminer::item::{Item, ItemType};
 use crate::translation::{Language, Translations};
+use crate::{
+    game_manager::CompileLanguage,
+    games::{compiling::Compiling, goldminer::hook::HookState},
+};
 
 // 添加游戏状态枚举
 #[derive(PartialEq)]
@@ -34,8 +37,8 @@ pub struct GoldMiner {
     pub window_height: f32,
     pub level: i32,
     pub items_collected: i32,
-    pub game_state: GameState, // 添加游戏状态字段
-    translations: Translations,  // 添加translations字段
+    pub game_state: GameState,  // 添加游戏状态字段
+    translations: Translations, // 添加translations字段
     compiling: RefCell<Compiling>,
 }
 
@@ -149,7 +152,6 @@ impl GoldMiner {
     ///
     /// 处理钩子的移动、物品的捕获以及分数的计算
     pub fn update(&mut self) {
-
         if self.game_state == GameState::Paused {
             self.compiling.borrow_mut().update();
             return;
@@ -288,7 +290,8 @@ impl GoldMiner {
     fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
         let welcome_text = vec![
             Spans::from(vec![Span::styled(
-                format!("{} {}!", 
+                format!(
+                    "{} {}!",
                     self.translations.get_text("welcome_to"),
                     self.translations.get_text("goldminer_title")
                 ),
@@ -365,21 +368,15 @@ impl GoldMiner {
         content.push(Spans::from(vec![
             Span::styled(
                 format!("{} ", self.translations.get_text("level")),
-                Style::default().fg(Color::Yellow)
+                Style::default().fg(Color::Yellow),
             ),
-            Span::styled(
-                self.level.to_string(),
-                Style::default().fg(Color::Green)
-            ),
+            Span::styled(self.level.to_string(), Style::default().fg(Color::Green)),
             Span::raw("  "),
             Span::styled(
                 format!("{} ", self.translations.get_text("score")),
-                Style::default().fg(Color::Yellow)
+                Style::default().fg(Color::Yellow),
             ),
-            Span::styled(
-                self.score.to_string(),
-                Style::default().fg(Color::Green)
-            ),
+            Span::styled(self.score.to_string(), Style::default().fg(Color::Green)),
         ]));
 
         for y in 0..area.height {
@@ -461,13 +458,12 @@ impl GoldMiner {
             content.push(Spans::from(line_spans));
         }
 
-        let paragraph = Paragraph::new(content)
-            .block(Block::default().borders(Borders::ALL).title(
-                Span::styled(
-                    self.translations.get_text("goldminer_title"),
-                    Style::default().fg(Color::Yellow)
-                ),
-            ));
+        let paragraph = Paragraph::new(content).block(
+            Block::default().borders(Borders::ALL).title(Span::styled(
+                self.translations.get_text("goldminer_title"),
+                Style::default().fg(Color::Yellow),
+            )),
+        );
         f.render_widget(paragraph, area);
     }
 

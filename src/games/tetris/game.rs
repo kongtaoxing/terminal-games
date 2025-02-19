@@ -1,5 +1,11 @@
+use crate::games::compiling::Compiling;
+use crate::{
+    game_manager::CompileLanguage,
+    translation::{Language, Translations},
+};
 use crossterm::event::KeyCode;
 use rand::Rng;
+use std::cell::RefCell;
 use tui::{
     backend::Backend,
     layout::Rect,
@@ -8,9 +14,6 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use crate::{game_manager::CompileLanguage, translation::{Language, Translations}};
-use crate::games::compiling::Compiling;
-use std::cell::RefCell;
 
 #[derive(PartialEq)]
 pub enum GameState {
@@ -187,7 +190,8 @@ impl Tetris {
     pub fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
         let welcome_text = vec![
             Spans::from(vec![Span::styled(
-                format!("{} {}!", 
+                format!(
+                    "{} {}!",
                     self.translations.get_text("welcome_to"),
                     self.translations.get_text("tetris_title")
                 ),
@@ -214,12 +218,10 @@ impl Tetris {
         ];
 
         let paragraph = Paragraph::new(welcome_text)
-            .block(Block::default()
-                .borders(Borders::ALL)
-                .title(Span::styled(
-                    self.translations.get_text("tetris_title"),
-                    Style::default().fg(Color::Yellow),
-                )))
+            .block(Block::default().borders(Borders::ALL).title(Span::styled(
+                self.translations.get_text("tetris_title"),
+                Style::default().fg(Color::Yellow),
+            )))
             .alignment(tui::layout::Alignment::Center);
         f.render_widget(paragraph, area);
     }
@@ -250,7 +252,7 @@ impl Tetris {
         }
 
         let mut text = vec![];
-        
+
         text.push(Spans::from(""));
 
         for row in &display_board {
@@ -262,11 +264,12 @@ impl Tetris {
         }
 
         text.push(Spans::from(""));
-        text.push(Spans::from(format!("{} {}", 
+        text.push(Spans::from(format!(
+            "{} {}",
             self.translations.get_text("score"),
             self.score
         )));
-        
+
         if self.game_over {
             text.push(Spans::from(self.translations.get_text("game_over")));
             text.push(Spans::from(self.translations.get_text("press_r_restart")));
@@ -282,12 +285,10 @@ impl Tetris {
         let visible_text = text[start_index..].to_vec();
 
         let paragraph = Paragraph::new(visible_text)
-            .block(Block::default()
-                .borders(Borders::ALL)
-                .title(Span::styled(
-                    self.translations.get_text("tetris_title"),
-                    Style::default().fg(Color::Cyan)
-                )))
+            .block(Block::default().borders(Borders::ALL).title(Span::styled(
+                self.translations.get_text("tetris_title"),
+                Style::default().fg(Color::Cyan),
+            )))
             .alignment(tui::layout::Alignment::Left);
 
         f.render_widget(paragraph, area);

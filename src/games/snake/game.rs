@@ -1,5 +1,12 @@
+use crate::games::compiling::Compiling;
+use crate::{
+    game_manager::CompileLanguage,
+    translation::{Language, Translations},
+};
 use crossterm::event::KeyCode;
 use rand::Rng;
+use std::cell::RefCell;
+use std::collections::VecDeque;
 use tui::{
     backend::Backend,
     layout::Rect,
@@ -8,10 +15,6 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use crate::{game_manager::CompileLanguage, translation::{Language, Translations}};
-use crate::games::compiling::Compiling;
-use std::cell::RefCell;
-use std::collections::VecDeque;
 
 #[derive(PartialEq)]
 pub enum GameState {
@@ -36,8 +39,8 @@ struct Position {
 
 #[derive(Clone, PartialEq)]
 enum FoodType {
-    Apple,  // 大食物
-    Candy,  // 小食物
+    Apple, // 大食物
+    Candy, // 小食物
 }
 
 #[derive(Clone, PartialEq)]
@@ -80,7 +83,7 @@ impl Snake {
             compiling: RefCell::new(Compiling::new()),
             next_direction: Direction::Right,
         };
-        
+
         snake.snake_body.push_back(Position { x: 10, y: 10 });
         snake.spawn_food();
         snake
@@ -168,12 +171,12 @@ impl Snake {
 
     fn spawn_food(&mut self) {
         let mut rng = rand::thread_rng();
-        
+
         // 随机选择食物类型
         self.food.food_type = if rng.gen_bool(0.7) {
-            FoodType::Apple  // 70%概率生成苹果
+            FoodType::Apple // 70%概率生成苹果
         } else {
-            FoodType::Candy  // 30%概率生成糖果
+            FoodType::Candy // 30%概率生成糖果
         };
 
         loop {
@@ -187,19 +190,31 @@ impl Snake {
                     // 检查2x2的空间
                     let positions = vec![
                         base_pos.clone(),
-                        Position { x: base_pos.x + 1, y: base_pos.y },
-                        Position { x: base_pos.x, y: base_pos.y + 1 },
-                        Position { x: base_pos.x + 1, y: base_pos.y + 1 },
+                        Position {
+                            x: base_pos.x + 1,
+                            y: base_pos.y,
+                        },
+                        Position {
+                            x: base_pos.x,
+                            y: base_pos.y + 1,
+                        },
+                        Position {
+                            x: base_pos.x + 1,
+                            y: base_pos.y + 1,
+                        },
                     ];
 
-                    if x < 19 && y < 19 && positions.iter().all(|pos| {
-                        !self.snake_body.iter().any(|p| p.x == pos.x && p.y == pos.y)
-                    }) {
+                    if x < 19
+                        && y < 19
+                        && positions.iter().all(|pos| {
+                            !self.snake_body.iter().any(|p| p.x == pos.x && p.y == pos.y)
+                        })
+                    {
                         self.food.position = base_pos;
                         self.food.positions = positions;
                         break;
                     }
-                },
+                }
                 FoodType::Candy => {
                     if !self.snake_body.iter().any(|p| p.x == x && p.y == y) {
                         self.food.position = base_pos.clone();
@@ -212,23 +227,43 @@ impl Snake {
     }
 
     fn check_food_collision(&mut self, head: &Position) -> bool {
-        self.food.positions.iter().any(|food_pos| {
-            food_pos.x == head.x && food_pos.y == head.y
-        })
+        self.food
+            .positions
+            .iter()
+            .any(|food_pos| food_pos.x == head.x && food_pos.y == head.y)
     }
 
     fn move_snake(&mut self) {
         if let Some(head) = self.snake_body.front() {
             let new_head = match self.direction {
-                Direction::Up => Position { x: head.x, y: head.y - 1 },
-                Direction::Down => Position { x: head.x, y: head.y + 1 },
-                Direction::Left => Position { x: head.x - 1, y: head.y },
-                Direction::Right => Position { x: head.x + 1, y: head.y },
+                Direction::Up => Position {
+                    x: head.x,
+                    y: head.y - 1,
+                },
+                Direction::Down => Position {
+                    x: head.x,
+                    y: head.y + 1,
+                },
+                Direction::Left => Position {
+                    x: head.x - 1,
+                    y: head.y,
+                },
+                Direction::Right => Position {
+                    x: head.x + 1,
+                    y: head.y,
+                },
             };
 
             // 检查是否撞墙或撞到自己
-            if new_head.x < 0 || new_head.x >= 20 || new_head.y < 0 || new_head.y >= 20 
-                || self.snake_body.iter().any(|p| p.x == new_head.x && p.y == new_head.y) {
+            if new_head.x < 0
+                || new_head.x >= 20
+                || new_head.y < 0
+                || new_head.y >= 20
+                || self
+                    .snake_body
+                    .iter()
+                    .any(|p| p.x == new_head.x && p.y == new_head.y)
+            {
                 self.game_over = true;
                 return;
             }
@@ -259,7 +294,8 @@ impl Snake {
     fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
         let welcome_text = vec![
             Spans::from(vec![Span::styled(
-                format!("{} {}!", 
+                format!(
+                    "{} {}!",
                     self.translations.get_text("welcome_to"),
                     self.translations.get_text("snake_title")
                 ),
@@ -279,12 +315,10 @@ impl Snake {
         ];
 
         let paragraph = Paragraph::new(welcome_text)
-            .block(Block::default()
-                .borders(Borders::ALL)
-                .title(Span::styled(
-                    self.translations.get_text("snake_title"),
-                    Style::default().fg(Color::Yellow),
-                )))
+            .block(Block::default().borders(Borders::ALL).title(Span::styled(
+                self.translations.get_text("snake_title"),
+                Style::default().fg(Color::Yellow),
+            )))
             .alignment(tui::layout::Alignment::Center);
         f.render_widget(paragraph, area);
     }
@@ -306,7 +340,10 @@ impl Snake {
         for y in 0..20 {
             let mut line = String::new();
             for x in 0..20 {
-                let current_pos = Position { x: x as i32, y: y as i32 };
+                let current_pos = Position {
+                    x: x as i32,
+                    y: y as i32,
+                };
                 if self.food.positions.contains(&current_pos) {
                     match self.food.food_type {
                         FoodType::Apple => line.push_str("🍎"), // 苹果
@@ -322,7 +359,8 @@ impl Snake {
         }
 
         text.push(Spans::from(""));
-        text.push(Spans::from(format!("{}: {}", 
+        text.push(Spans::from(format!(
+            "{}: {}",
             self.translations.get_text("score"),
             self.score
         )));
@@ -333,12 +371,10 @@ impl Snake {
         }
 
         let paragraph = Paragraph::new(text)
-            .block(Block::default()
-                .borders(Borders::ALL)
-                .title(Span::styled(
-                    self.translations.get_text("snake_title"),
-                    Style::default().fg(Color::Green)
-                )))
+            .block(Block::default().borders(Borders::ALL).title(Span::styled(
+                self.translations.get_text("snake_title"),
+                Style::default().fg(Color::Green),
+            )))
             .alignment(tui::layout::Alignment::Center);
 
         f.render_widget(paragraph, area);

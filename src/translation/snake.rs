@@ -1,6 +1,6 @@
 use super::Language;
-use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 lazy_static! {
     pub static ref SNAKE_TRANSLATIONS: HashMap<&'static str, HashMap<Language, String>> = {
@@ -32,51 +32,45 @@ lazy_static! {
         m.insert("how_to_play", how_to_play);
 
         let mut move_snake = HashMap::new();
-        move_snake.insert(Language::English, "Use arrow keys or WASD to move the snake".to_string());
+        move_snake.insert(
+            Language::English,
+            "Use arrow keys or WASD to move the snake".to_string(),
+        );
         move_snake.insert(Language::Chinese, "使用方向键或 WASD 移动蛇".to_string());
         m.insert("move_snake", move_snake);
 
         let mut eat_food_title = HashMap::new();
         eat_food_title.insert(
-            Language::English, 
-            "Eat food to grow longer and score points:".to_string()
+            Language::English,
+            "Eat food to grow longer and score points:".to_string(),
         );
-        eat_food_title.insert(
-            Language::Chinese, 
-            "吃掉食物可以变长并得分：".to_string()
-        );
+        eat_food_title.insert(Language::Chinese, "吃掉食物可以变长并得分：".to_string());
         m.insert("eat_food_title", eat_food_title);
 
         let mut apple_desc = HashMap::new();
         apple_desc.insert(
-            Language::English, 
-            "- Apple (🍎): 50 points (large)".to_string()
+            Language::English,
+            "- Apple (🍎): 50 points (large)".to_string(),
         );
-        apple_desc.insert(
-            Language::Chinese, 
-            "- 苹果(🍎)：50分（大食物）".to_string()
-        );
+        apple_desc.insert(Language::Chinese, "- 苹果(🍎)：50分（大食物）".to_string());
         m.insert("apple_desc", apple_desc);
 
         let mut candy_desc = HashMap::new();
         candy_desc.insert(
-            Language::English, 
-            "- Candy (🍬): 150 points (small)".to_string()
+            Language::English,
+            "- Candy (🍬): 150 points (small)".to_string(),
         );
-        candy_desc.insert(
-            Language::Chinese, 
-            "- 糖果(🍬)：150分（小食物）".to_string()
-        );
+        candy_desc.insert(Language::Chinese, "- 糖果(🍬)：150分（小食物）".to_string());
         m.insert("candy_desc", candy_desc);
 
         let mut avoid_walls = HashMap::new();
         avoid_walls.insert(
-            Language::English, 
-            "Avoid walls, yourself, and be careful with large apples!".to_string()
+            Language::English,
+            "Avoid walls, yourself, and be careful with large apples!".to_string(),
         );
         avoid_walls.insert(
-            Language::Chinese, 
-            "避免撞到墙壁和自己，注意大苹果占据的空间！".to_string()
+            Language::Chinese,
+            "避免撞到墙壁和自己，注意大苹果占据的空间！".to_string(),
         );
         m.insert("avoid_walls", avoid_walls);
 

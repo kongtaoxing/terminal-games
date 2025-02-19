@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Language {
@@ -10,7 +10,7 @@ pub enum Language {
 lazy_static! {
     pub static ref COMMON_TRANSLATIONS: HashMap<&'static str, HashMap<Language, String>> = {
         let mut m = HashMap::new();
-        
+
         // Main Menu translations
         let mut menu_title = HashMap::new();
         menu_title.insert(Language::English, "Terminal Game Collection".to_string());
@@ -44,4 +44,4 @@ lazy_static! {
 
         m
     };
-} 
+}

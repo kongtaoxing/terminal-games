@@ -1,6 +1,6 @@
 use super::Language;
-use std::collections::HashMap;
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 
 lazy_static! {
     pub static ref TWENTY_FORTY_EIGHT_TRANSLATIONS: HashMap<&'static str, HashMap<Language, String>> = {
@@ -27,7 +27,10 @@ lazy_static! {
         m.insert("score", score);
 
         let mut game_over = HashMap::new();
-        game_over.insert(Language::English, "Game Over! Press 'r' to restart".to_string());
+        game_over.insert(
+            Language::English,
+            "Game Over! Press 'r' to restart".to_string(),
+        );
         game_over.insert(Language::Chinese, "游戏结束！按'r'键重新开始".to_string());
         m.insert("game_over", game_over);
 
@@ -38,35 +41,26 @@ lazy_static! {
 
         let mut move_controls = HashMap::new();
         move_controls.insert(
-            Language::English, 
-            "Use Arrow keys or WASD to move tiles".to_string()
+            Language::English,
+            "Use Arrow keys or WASD to move tiles".to_string(),
         );
-        move_controls.insert(
-            Language::Chinese, 
-            "使用方向键或WASD移动方块".to_string()
-        );
+        move_controls.insert(Language::Chinese, "使用方向键或WASD移动方块".to_string());
         m.insert("move_controls", move_controls);
 
         let mut merge_tip = HashMap::new();
         merge_tip.insert(
-            Language::English, 
-            "Merge same numbers to get 2048!".to_string()
+            Language::English,
+            "Merge same numbers to get 2048!".to_string(),
         );
-        merge_tip.insert(
-            Language::Chinese, 
-            "合并相同数字以获得2048！".to_string()
-        );
+        merge_tip.insert(Language::Chinese, "合并相同数字以获得2048！".to_string());
         m.insert("merge_tip", merge_tip);
 
         let mut pause_control = HashMap::new();
         pause_control.insert(
-            Language::English, 
-            "Press P or ESC to pause game".to_string()
+            Language::English,
+            "Press P or ESC to pause game".to_string(),
         );
-        pause_control.insert(
-            Language::Chinese, 
-            "按P或ESC键暂停游戏".to_string()
-        );
+        pause_control.insert(Language::Chinese, "按P或ESC键暂停游戏".to_string());
         m.insert("pause_control", pause_control);
 
         let mut game_paused = HashMap::new();
@@ -75,14 +69,8 @@ lazy_static! {
         m.insert("game_paused", game_paused);
 
         let mut resume_tip = HashMap::new();
-        resume_tip.insert(
-            Language::English, 
-            "Press P or ESC to resume".to_string()
-        );
-        resume_tip.insert(
-            Language::Chinese, 
-            "按P或ESC键继续".to_string()
-        );
+        resume_tip.insert(Language::English, "Press P or ESC to resume".to_string());
+        resume_tip.insert(Language::Chinese, "按P或ESC键继续".to_string());
         m.insert("resume_tip", resume_tip);
 
         m

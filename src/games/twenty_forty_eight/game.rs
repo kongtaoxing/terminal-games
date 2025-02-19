@@ -1,5 +1,11 @@
+use crate::games::compiling::Compiling;
+use crate::{
+    game_manager::CompileLanguage,
+    translation::{Language, Translations},
+};
 use crossterm::event::KeyCode;
 use rand::seq::SliceRandom;
+use std::cell::RefCell;
 use tui::{
     backend::Backend,
     layout::Rect,
@@ -8,9 +14,6 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use crate::{game_manager::CompileLanguage, translation::{Language, Translations}};
-use crate::games::compiling::Compiling;
-use std::cell::RefCell;
 
 #[derive(PartialEq)]
 pub enum GameState {
@@ -266,17 +269,18 @@ impl TwentyFortyEight {
 
     fn render_game<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
         let mut text = vec![];
-        
+
         // 添加顶部边框
         text.push(Spans::from("┌────┬────┬────┬────┐"));
-        
+
         for (i, row) in self.board.iter().enumerate() {
             // 添加数字行
-            let line = row.iter()
+            let line = row
+                .iter()
                 .map(|&n| {
-                    let num_str = if n == 0 { 
-                        "    ".to_string() 
-                    } else { 
+                    let num_str = if n == 0 {
+                        "    ".to_string()
+                    } else {
                         format!("{:^4}", n)
                     };
                     num_str
@@ -284,18 +288,19 @@ impl TwentyFortyEight {
                 .collect::<Vec<_>>()
                 .join("│");
             text.push(Spans::from(format!("│{}│", line)));
-            
+
             // 除了最后一行，每行数字后面添加分隔线
             if i < self.board.len() - 1 {
                 text.push(Spans::from("├────┼────┼────┼────┤"));
             }
         }
-        
+
         // 添加底部边框
         text.push(Spans::from("└────┴────┴────┴────┘"));
         text.push(Spans::from(""));
-        text.push(Spans::from(format!("{}{}", 
-            self.translations.get_text("score"), 
+        text.push(Spans::from(format!(
+            "{}{}",
+            self.translations.get_text("score"),
             self.score
         )));
 
@@ -322,5 +327,3 @@ impl TwentyFortyEight {
         self.compiling.borrow_mut().set_language(language);
     }
 }
-
-
