@@ -9,7 +9,7 @@ use tui::{
     Terminal,
 };
 
-use terminal_games::{game_manager::GameState, GameManager};
+use terminal_games::{game_manager::GameType, GameManager};
 
 fn main() -> Result<(), Box<dyn Error>> {
     // 设置终端
@@ -51,10 +51,10 @@ fn run_game<B: Backend>(
         if event::poll(Duration::from_millis(16))? {
             if let Event::Key(key) = event::read()? {
                 if key.code == KeyCode::Char('q') {
-                    if game_manager.state == GameState::MainMenu {
+                    if game_manager.state == GameType::MainMenu {
                         return Ok(());
                     } else {
-                        game_manager.state = GameState::MainMenu;
+                        game_manager.state = GameType::MainMenu;
                     }
                 } else {
                     game_manager.handle_input(key.code);

@@ -12,8 +12,16 @@ use tui::{
     Frame,
 };
 
-#[derive(PartialEq)]
-pub enum GameState {
+#[derive(PartialEq, Clone, Copy)]
+pub enum CompileLanguage {
+    Rust,
+    Go,
+    CMake,
+}
+
+// 定义所有游戏的枚举
+#[derive(PartialEq, Clone, Copy)]
+pub enum GameType {
     MainMenu,
     GoldMiner,
     Tetris,
@@ -21,19 +29,71 @@ pub enum GameState {
     TwentyFortyEight,
 }
 
-#[derive(PartialEq, Clone)]
-pub enum CompileLanguage {
-    Rust,
-    Go,
-    CMake,
+// 使用枚举替代 trait object
+enum GameEnum {
+    GoldMiner(GoldMiner),
+    Tetris(Tetris),
+    Snake(Snake),
+    TwentyFortyEight(TwentyFortyEight),
+}
+
+impl GameEnum {
+    fn handle_input(&mut self, key: KeyCode) -> () {
+        match self {
+            Self::GoldMiner(game) => { game.handle_input(key); },
+            Self::Tetris(game) => { game.handle_input(key); },
+            Self::Snake(game) => { game.handle_input(key); },
+            Self::TwentyFortyEight(game) => { game.handle_input(key); },
+        }
+    }
+
+    fn update(&mut self) {
+        match self {
+            Self::GoldMiner(game) => game.update(),
+            Self::Tetris(game) => game.update(),
+            Self::Snake(game) => game.update(),
+            Self::TwentyFortyEight(game) => game.update(),
+        }
+    }
+
+    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+        match self {
+            Self::GoldMiner(game) => game.render(f, area),
+            Self::Tetris(game) => game.render(f, area),
+            Self::Snake(game) => game.render(f, area),
+            Self::TwentyFortyEight(game) => game.render(f, area),
+        }
+    }
+
+    fn set_language(&mut self, language: Language) {
+        match self {
+            Self::GoldMiner(game) => game.set_language(language),
+            Self::Tetris(game) => game.set_language(language),
+            Self::Snake(game) => game.set_language(language),
+            Self::TwentyFortyEight(game) => game.set_language(language),
+        }
+    }
+
+    fn set_compile_language(&mut self, lang: CompileLanguage) {
+        match self {
+            Self::GoldMiner(game) => game.set_compile_language(lang),
+            Self::Tetris(game) => game.set_compile_language(lang),
+            Self::Snake(game) => game.set_compile_language(lang),
+            Self::TwentyFortyEight(game) => game.set_compile_language(lang),
+        }
+    }
+}
+
+// 定义游戏信息结构体
+struct GameInfo {
+    game_type: GameType,
+    title_key: &'static str,
+    game: GameEnum,
 }
 
 pub struct GameManager {
-    pub state: GameState,
-    goldminer: GoldMiner,
-    tetris: Tetris,
-    snake: Snake,
-    twenty_forty_eight: TwentyFortyEight,
+    pub state: GameType,
+    games: [GameInfo; 4], // 固定大小的数组
     selected_game: usize,
     translations: Translations,
     selecting_language: bool,
@@ -43,12 +103,33 @@ pub struct GameManager {
 
 impl GameManager {
     pub fn new() -> Self {
+        // 定义所有游戏
+        let games = [
+            GameInfo {
+                game_type: GameType::GoldMiner,
+                title_key: "goldminer_title",
+                game: GameEnum::GoldMiner(GoldMiner::new()),
+            },
+            GameInfo {
+                game_type: GameType::Tetris,
+                title_key: "tetris_title",
+                game: GameEnum::Tetris(Tetris::new()),
+            },
+            GameInfo {
+                game_type: GameType::Snake,
+                title_key: "snake_title",
+                game: GameEnum::Snake(Snake::new()),
+            },
+            GameInfo {
+                game_type: GameType::TwentyFortyEight,
+                title_key: "twenty_forty_eight_title",
+                game: GameEnum::TwentyFortyEight(TwentyFortyEight::new()),
+            },
+        ];
+
         Self {
-            state: GameState::MainMenu,
-            goldminer: GoldMiner::new(),
-            tetris: Tetris::new(),
-            snake: Snake::new(),
-            twenty_forty_eight: TwentyFortyEight::new(),
+            state: GameType::MainMenu,
+            games,
             selected_game: 0,
             translations: Translations::new(),
             selecting_language: false,
@@ -59,21 +140,17 @@ impl GameManager {
 
     pub fn handle_input(&mut self, key: KeyCode) {
         match self.state {
-            GameState::MainMenu => {
+            GameType::MainMenu => {
                 if self.selecting_language {
                     match key {
                         KeyCode::Char('e') => {
                             self.translations.set_language(Language::English);
-                            self.goldminer.set_language(Language::English);
-                            self.tetris.set_language(Language::English);
-                            self.twenty_forty_eight.set_language(Language::English);
+                            self.set_language(Language::English);
                             self.selecting_language = false;
                         }
                         KeyCode::Char('c') => {
                             self.translations.set_language(Language::Chinese);
-                            self.goldminer.set_language(Language::Chinese);
-                            self.tetris.set_language(Language::Chinese);
-                            self.twenty_forty_eight.set_language(Language::Chinese);
+                            self.set_language(Language::Chinese);
                             self.selecting_language = false;
                         }
                         KeyCode::Esc => self.selecting_language = false,
@@ -83,26 +160,17 @@ impl GameManager {
                     match key {
                         KeyCode::Char('r') => {
                             self.compile_language = CompileLanguage::Rust;
-                            self.goldminer.set_compile_language(CompileLanguage::Rust);
-                            self.tetris.set_compile_language(CompileLanguage::Rust);
-                            self.twenty_forty_eight
-                                .set_compile_language(CompileLanguage::Rust);
+                            self.set_compile_language(CompileLanguage::Rust);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Char('g') => {
                             self.compile_language = CompileLanguage::Go;
-                            self.goldminer.set_compile_language(CompileLanguage::Go);
-                            self.tetris.set_compile_language(CompileLanguage::Go);
-                            self.twenty_forty_eight
-                                .set_compile_language(CompileLanguage::Go);
+                            self.set_compile_language(CompileLanguage::Go);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Char('m') => {
                             self.compile_language = CompileLanguage::CMake;
-                            self.goldminer.set_compile_language(CompileLanguage::CMake);
-                            self.tetris.set_compile_language(CompileLanguage::CMake);
-                            self.twenty_forty_eight
-                                .set_compile_language(CompileLanguage::CMake);
+                            self.set_compile_language(CompileLanguage::CMake);
                             self.selecting_compile_language = false;
                         }
                         KeyCode::Esc => self.selecting_compile_language = false,
@@ -110,67 +178,57 @@ impl GameManager {
                     }
                 } else {
                     match key {
-                        KeyCode::Char('t') => self.selecting_language = true,
-                        KeyCode::Char('c') => self.selecting_compile_language = true,
-                        KeyCode::Char('1') => self.state = GameState::GoldMiner,
-                        KeyCode::Char('2') => self.state = GameState::Tetris,
-                        KeyCode::Char('3') => self.state = GameState::Snake,
-                        KeyCode::Char('4') => self.state = GameState::TwentyFortyEight,
+                        KeyCode::Char(c) => {
+                            // 通过数字选择游戏
+                            if let Some(index) = c.to_digit(10) {
+                                let index = index as usize - 1;
+                                if index < self.games.len() {
+                                    self.state = self.games[index].game_type;
+                                }
+                            }
+                        }
                         KeyCode::Up => {
                             if self.selected_game > 0 {
                                 self.selected_game -= 1;
                             }
                         }
                         KeyCode::Down => {
-                            if self.selected_game < 3 {
+                            if self.selected_game < self.games.len() - 1 {
                                 self.selected_game += 1;
                             }
                         }
                         KeyCode::Enter => {
-                            self.state = match self.selected_game {
-                                0 => GameState::GoldMiner,
-                                1 => GameState::Tetris,
-                                2 => GameState::Snake,
-                                3 => GameState::TwentyFortyEight,
-                                _ => GameState::MainMenu,
-                            };
+                            self.state = self.games[self.selected_game].game_type;
                         }
                         _ => {}
                     }
                 }
             }
-            GameState::GoldMiner => {
-                let _ = self.goldminer.handle_input(key);
-            }
-            GameState::Tetris => {
-                let _ = self.tetris.handle_input(key);
-            }
-            GameState::Snake => {
-                let _ = self.snake.handle_input(key);
-            }
-            GameState::TwentyFortyEight => {
-                let _ = self.twenty_forty_eight.handle_input(key);
+            _ => {
+                if let Some(game_info) = self.games.iter_mut()
+                    .find(|g| g.game_type == self.state) {
+                    game_info.game.handle_input(key);
+                }
             }
         }
     }
 
     pub fn update(&mut self) {
-        match self.state {
-            GameState::MainMenu => {}
-            GameState::GoldMiner => self.goldminer.update(),
-            GameState::Tetris => self.tetris.update(),
-            GameState::Snake => self.snake.update(),
-            GameState::TwentyFortyEight => self.twenty_forty_eight.update(),
+        if let Some(game_info) = self.games.iter_mut()
+            .find(|g| g.game_type == self.state) {
+            game_info.game.update();
         }
     }
 
     pub fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         match self.state {
-            GameState::MainMenu => self.render_main_menu(f, area),
-            GameState::GoldMiner => self.goldminer.render(f, area),
-            GameState::Tetris => self.tetris.render(f, area),
-            GameState::Snake => self.snake.render(f, area),
-            GameState::TwentyFortyEight => self.twenty_forty_eight.render(f, area),
+            GameType::MainMenu => self.render_main_menu(f, area),
+            _ => {
+                if let Some(game_info) = self.games.iter_mut()
+                    .find(|g| g.game_type == self.state) {
+                    game_info.game.render(f, area);
+                }
+            }
         }
     }
 
@@ -183,44 +241,22 @@ impl GameManager {
             Spans::from(""),
             Spans::from(self.translations.get_text("available_games")),
             Spans::from(""),
-            Spans::from(vec![Span::styled(
-                format!(" 1. {}", self.translations.get_text("goldminer_title")),
-                Style::default().fg(if self.selected_game == 0 {
-                    Color::Green
-                } else {
-                    Color::White
-                }),
-            )]),
-            Spans::from(vec![Span::styled(
-                format!(" 2. {}", self.translations.get_text("tetris_title")),
-                Style::default().fg(if self.selected_game == 1 {
-                    Color::Green
-                } else {
-                    Color::White
-                }),
-            )]),
-            Spans::from(vec![Span::styled(
-                format!(" 3. {}", self.translations.get_text("snake_title")),
-                Style::default().fg(if self.selected_game == 2 {
-                    Color::Green
-                } else {
-                    Color::White
-                }),
-            )]),
-            Spans::from(vec![Span::styled(
-                format!(
-                    " 4. {}",
-                    self.translations.get_text("twenty_forty_eight_title")
-                ),
-                Style::default().fg(if self.selected_game == 3 {
-                    Color::Green
-                } else {
-                    Color::White
-                }),
-            )]),
-            Spans::from(""),
-            Spans::from(self.translations.get_text("controls")),
         ];
+
+        // 动态生成游戏列表
+        for (index, game_info) in self.games.iter().enumerate() {
+            menu_text.push(Spans::from(vec![Span::styled(
+                format!(" {}. {}", 
+                    index + 1,
+                    self.translations.get_text(game_info.title_key)
+                ),
+                Style::default().fg(if self.selected_game == index {
+                    Color::Green
+                } else {
+                    Color::White
+                }),
+            )]));
+        }
 
         if self.selecting_compile_language {
             menu_text.push(Spans::from(""));
@@ -242,7 +278,7 @@ impl GameManager {
             menu_text.push(Spans::from("C: 中文"));
             menu_text.push(Spans::from("ESC: Cancel / 取消"));
         } else {
-            for line in self.translations.get_text("controls_desc").split('\n') {
+            for line in self.translations.get_text("controls").split('\n') {
                 menu_text.push(Spans::from(line.to_string()));
             }
             menu_text.push(Spans::from(format!(
@@ -266,5 +302,19 @@ impl GameManager {
             )))
             .alignment(tui::layout::Alignment::Center);
         f.render_widget(paragraph, area);
+    }
+
+    pub fn set_language(&mut self, language: Language) {
+        self.translations.set_language(language);
+        for game_info in &mut self.games {
+            game_info.game.set_language(language);
+        }
+    }
+
+    pub fn set_compile_language(&mut self, lang: CompileLanguage) {
+        self.compile_language = lang;
+        for game_info in &mut self.games {
+            game_info.game.set_compile_language(lang);
+        }
     }
 }

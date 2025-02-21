@@ -14,6 +14,7 @@ use crate::translation::{Language, Translations};
 use crate::{
     game_manager::CompileLanguage,
     games::{compiling::Compiling, goldminer::hook::HookState},
+    games::game_trait::Game,
 };
 
 // 添加游戏状态枚举
@@ -479,5 +480,31 @@ impl GoldMiner {
 
     pub fn set_compile_language(&mut self, lang: CompileLanguage) {
         self.compiling.borrow_mut().set_language(lang);
+    }
+}
+
+impl Game for GoldMiner {
+    fn new() -> Self {
+        Self::new()
+    }
+
+    fn handle_input(&mut self, key: KeyCode) {
+        self.handle_input(key)
+    }
+
+    fn update(&mut self) {
+        self.update()
+    }
+
+    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+        self.render(f, area)
+    }
+
+    fn set_language(&mut self, language: Language) {
+        self.set_language(language)
+    }
+
+    fn set_compile_language(&mut self, lang: CompileLanguage) {
+        self.set_compile_language(lang)
     }
 }

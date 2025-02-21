@@ -1,4 +1,5 @@
 use crate::games::compiling::Compiling;
+use crate::Game;
 use crate::{
     game_manager::CompileLanguage,
     translation::{Language, Translations},
@@ -325,5 +326,31 @@ impl TwentyFortyEight {
 
     pub fn set_compile_language(&mut self, language: CompileLanguage) {
         self.compiling.borrow_mut().set_language(language);
+    }
+}
+
+impl Game for TwentyFortyEight {
+    fn new() -> Self {
+        TwentyFortyEight::new()
+    }
+
+    fn handle_input(&mut self, key: KeyCode) {
+        self.handle_input(key);
+    }
+
+    fn update(&mut self) {
+        self.update();
+    }
+
+    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+        TwentyFortyEight::render(self, f, area);
+    }
+
+    fn set_language(&mut self, language: Language) {
+        TwentyFortyEight::set_language(self, language);
+    }
+
+    fn set_compile_language(&mut self, lang: CompileLanguage) {
+        TwentyFortyEight::set_compile_language(self, lang);
     }
 }

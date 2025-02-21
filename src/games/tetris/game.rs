@@ -1,4 +1,5 @@
 use crate::games::compiling::Compiling;
+use crate::Game;
 use crate::{
     game_manager::CompileLanguage,
     translation::{Language, Translations},
@@ -427,5 +428,32 @@ impl Tetris {
 
     pub fn set_compile_language(&mut self, lang: CompileLanguage) {
         self.compiling.borrow_mut().set_language(lang);
+    }
+}
+
+
+impl Game for Tetris {
+    fn new() -> Self {
+        Tetris::new()
+    }
+
+    fn handle_input(&mut self, key: KeyCode) {
+        let _ = self.handle_input(key);
+    }
+
+    fn update(&mut self) {
+        Tetris::update(self);
+    }
+
+    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+        Tetris::render(self, f, area);
+    }
+
+    fn set_language(&mut self, language: Language) {
+        Tetris::set_language(self, language);
+    }
+
+    fn set_compile_language(&mut self, lang: CompileLanguage) {
+        Tetris::set_compile_language(self, lang);
     }
 }

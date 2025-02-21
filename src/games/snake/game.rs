@@ -1,4 +1,5 @@
 use crate::games::compiling::Compiling;
+use crate::Game;
 use crate::{
     game_manager::CompileLanguage,
     translation::{Language, Translations},
@@ -390,3 +391,30 @@ impl Snake {
         self.compiling.borrow_mut().set_language(lang);
     }
 }
+
+impl Game for Snake {
+    fn new() -> Self {
+        Snake::new()
+    }
+
+    fn handle_input(&mut self, key: KeyCode) {
+        self.handle_input(key);
+    }   
+
+    fn update(&mut self) {
+        self.update();
+    }
+
+    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+        Snake::render(self, f, area);
+    }
+
+    fn set_language(&mut self, language: Language) {
+        Snake::set_language(self, language);
+    }
+
+    fn set_compile_language(&mut self, lang: CompileLanguage) {
+        Snake::set_compile_language(self, lang);
+    }
+}
+  
