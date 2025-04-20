@@ -1,5 +1,6 @@
 use crossterm::event::KeyCode;
-use tui::{backend::Backend, Frame, layout::Rect};
+use tui::{backend::CrosstermBackend, Frame, layout::Rect};
+use std::io::Stdout;
 use crate::translation::Language;
 use crate::game_manager::CompileLanguage;
 
@@ -9,5 +10,5 @@ pub trait Game {
     fn update(&mut self);
     fn set_language(&mut self, language: Language);
     fn set_compile_language(&mut self, lang: CompileLanguage);
-    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect);
+    fn render(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect);
 } 

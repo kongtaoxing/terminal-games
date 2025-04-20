@@ -6,10 +6,11 @@ use crate::{
 };
 use crossterm::event::KeyCode;
 use rand::Rng;
+use tui::backend::CrosstermBackend;
 use std::cell::RefCell;
 use std::collections::VecDeque;
+use std::io::Stdout;
 use tui::{
-    backend::Backend,
     layout::Rect,
     style::{Color, Style},
     text::{Span, Spans},
@@ -284,7 +285,7 @@ impl Snake {
         }
     }
 
-    pub fn render<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    pub fn render(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         match self.game_state {
             GameState::Welcome => self.render_welcome(f, area),
             GameState::Playing => self.render_game(f, area),
@@ -292,7 +293,7 @@ impl Snake {
         }
     }
 
-    fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_welcome(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         let welcome_text = vec![
             Spans::from(vec![Span::styled(
                 format!(
@@ -324,7 +325,7 @@ impl Snake {
         f.render_widget(paragraph, area);
     }
 
-    fn render_game<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_game(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         let mut display_board = vec![vec![false; 20]; 20];
 
         // 绘制蛇身
@@ -381,7 +382,7 @@ impl Snake {
         f.render_widget(paragraph, area);
     }
 
-    fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_pause(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         if self.game_state == GameState::Paused {
             self.compiling.borrow_mut().render(f, area);
         }
@@ -405,7 +406,7 @@ impl Game for Snake {
         self.update();
     }
 
-    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+    fn render(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         Snake::render(self, f, area);
     }
 

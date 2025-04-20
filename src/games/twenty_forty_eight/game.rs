@@ -8,13 +8,14 @@ use crossterm::event::KeyCode;
 use rand::seq::SliceRandom;
 use std::cell::RefCell;
 use tui::{
-    backend::Backend,
     layout::Rect,
     style::{Color, Style},
     text::{Span, Spans},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
+use std::io::Stdout;
+use tui::backend::CrosstermBackend;
 
 #[derive(PartialEq)]
 pub enum GameState {
@@ -244,7 +245,7 @@ impl TwentyFortyEight {
         self.game_over = !has_empty && !can_merge;
     }
 
-    pub fn render<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    pub fn render(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         match self.game_state {
             GameState::Welcome => self.render_welcome(f, area),
             GameState::Playing => self.render_game(f, area),
@@ -252,7 +253,7 @@ impl TwentyFortyEight {
         }
     }
 
-    fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_welcome(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         let welcome_text = vec![
             Spans::from(vec![Span::styled(
                 self.translations.get_text("welcome_title"),
@@ -268,7 +269,7 @@ impl TwentyFortyEight {
         f.render_widget(paragraph, area);
     }
 
-    fn render_game<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_game(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         let mut text = vec![];
 
         // 添加顶部边框
@@ -320,7 +321,7 @@ impl TwentyFortyEight {
         f.render_widget(paragraph, area);
     }
 
-    fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_pause(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         self.compiling.borrow_mut().render(f, area);
     }
 
@@ -342,7 +343,7 @@ impl Game for TwentyFortyEight {
         self.update();
     }
 
-    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+    fn render(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         TwentyFortyEight::render(self, f, area);
     }
 

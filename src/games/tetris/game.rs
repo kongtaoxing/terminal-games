@@ -8,13 +8,14 @@ use crossterm::event::KeyCode;
 use rand::Rng;
 use std::cell::RefCell;
 use tui::{
-    backend::Backend,
     layout::Rect,
     style::{Color, Style},
     text::{Span, Spans},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
+use std::io::Stdout;
+use tui::backend::CrosstermBackend;
 
 #[derive(PartialEq)]
 pub enum GameState {
@@ -180,7 +181,7 @@ impl Tetris {
         }
     }
 
-    pub fn render<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    pub fn render(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         match self.game_state {
             GameState::Welcome => self.render_welcome(f, area),
             GameState::Playing => self.render_game(f, area),
@@ -188,7 +189,7 @@ impl Tetris {
         }
     }
 
-    pub fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    pub fn render_welcome(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         let welcome_text = vec![
             Spans::from(vec![Span::styled(
                 format!(
@@ -227,7 +228,7 @@ impl Tetris {
         f.render_widget(paragraph, area);
     }
 
-    pub fn render_game<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    pub fn render_game(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         let available_width = area.width as usize;
         let game_width = self.board[0].len() * self.block_width as usize;
         let padding = if available_width > game_width {
@@ -295,7 +296,7 @@ impl Tetris {
         f.render_widget(paragraph, area);
     }
 
-    pub fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    pub fn render_pause(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         if self.game_state == GameState::Paused {
             self.compiling.borrow_mut().render(f, area);
         }
@@ -445,7 +446,7 @@ impl Game for Tetris {
         Tetris::update(self);
     }
 
-    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+    fn render(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         Tetris::render(self, f, area);
     }
 

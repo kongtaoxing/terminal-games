@@ -1,12 +1,13 @@
 use std::collections::VecDeque;
 use tui::{
-    backend::Backend,
+    backend::CrosstermBackend,
     layout::Rect,
     style::{Color, Style},
     text::{Span, Spans},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
+use std::io::Stdout;
 
 use crate::game_manager::CompileLanguage;
 
@@ -107,7 +108,7 @@ impl Compiling {
         }
     }
 
-    pub fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+    pub fn render(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         // 根据区域高度确定显示的消息数量
         let visible_lines = (area.height as usize).saturating_sub(2);
         self.display_messages = self

@@ -1,7 +1,7 @@
 use crossterm::event::KeyCode;
-use std::{cell::RefCell, time::Instant};
+use std::{cell::RefCell, io::Stdout, time::Instant};
 use tui::{
-    backend::Backend,
+    backend::CrosstermBackend,
     layout::Rect,
     style::{Color, Style},
     text::{Span, Spans},
@@ -279,7 +279,7 @@ impl GoldMiner {
     ///
     /// * `f` - 帧缓冲区
     /// * `area` - 渲染区域
-    pub fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+    pub fn render(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         match self.game_state {
             GameState::Welcome => self.render_welcome(f, area),
             GameState::Playing => self.render_game(f, area),
@@ -288,7 +288,7 @@ impl GoldMiner {
     }
 
     // 添加处理欢迎界面的渲染函数
-    fn render_welcome<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_welcome(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         let welcome_text = vec![
             Spans::from(vec![Span::styled(
                 format!(
@@ -333,7 +333,7 @@ impl GoldMiner {
     }
 
     // 将原来的 render 函数改名为 render_game
-    fn render_game<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+    fn render_game(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         // 添加最小窗口大小检查
         if area.width < 20 || area.height < 10 {
             let warning = vec![
@@ -355,11 +355,11 @@ impl GoldMiner {
         self.window_height = area.height as f32;
         self.hook_x = self.window_width / 2.0;
 
-        let hook_chars = vec!["▼", "▽"];
-        let rope_chars = vec!["║", "│"];
-        let frame_index = (self.last_update.elapsed().as_millis() / 200) as usize % 2;
-        let hook_char = hook_chars[frame_index];
-        let rope_char = rope_chars[frame_index];
+        // let hook_chars = vec!["▼", "▽"];
+        // let rope_chars = vec!["║", "│"];
+        // let frame_index = (self.last_update.elapsed().as_millis() / 200) as usize % 2;
+        // let hook_char = hook_chars[frame_index];
+        // let rope_char = rope_chars[frame_index];
 
         let swing_range = (self.window_width / 2.0) - 10.0;
         let hook_screen_x = self.hook_x + (self.hook_angle.sin() * swing_range);
@@ -388,59 +388,43 @@ impl GoldMiner {
 
                 // 绘制未抓到的物品
                 for item in &self.items {
-                    if (x as f32 - item.x).abs() <= item.size
-                        && (y as f32 - item.y).abs() <= item.size
-                    {
+                    let item_screen_x = item.x.round() as u16;
+                    let item_screen_y = item.y.round() as u16;
+                    
+                    // 考虑物品大小，创建渲染范围
+                    let size = item.size.round() as u16;
+                    if x >= item_screen_x && x < item_screen_x + size &&
+                       y >= item_screen_y && y < item_screen_y + size {
                         match item.item_type {
                             ItemType::Gold => {
-                                if item.size > 1.5 {
-                                    char_to_draw = '◆';
-                                    style = Style::default().fg(Color::Yellow);
-                                } else {
-                                    char_to_draw = '♦';
-                                    style = Style::default().fg(Color::Yellow);
-                                }
+                                char_to_draw = if item.size > 1.5 { '◆' } else { '♦' };
+                                style = Style::default().fg(Color::Yellow);
                             }
                             ItemType::Stone => {
-                                if item.size > 1.5 {
-                                    char_to_draw = '■';
-                                    style = Style::default().fg(Color::Gray);
-                                } else {
-                                    char_to_draw = '□';
-                                    style = Style::default().fg(Color::DarkGray);
-                                }
+                                char_to_draw = if item.size > 1.5 { '■' } else { '□' };
+                                style = Style::default().fg(Color::Gray);
                             }
                             ItemType::Nothing => {}
                         }
                     }
                 }
 
-                // 绘制被抓到的物品（保持原来的形状和大小）
+                // 绘制被抓到的物品
                 if let Some(caught) = &self.caught_item {
-                    let caught_x = hook_screen_x;
-                    let caught_y = self.hook_y + caught.size; // 物品位于钩子正下方
-
-                    if (x as f32 - caught_x).abs() <= caught.size
-                        && (y as f32 - caught_y).abs() <= caught.size
-                    {
+                    let caught_screen_x = hook_screen_x.round() as u16;
+                    let caught_screen_y = self.hook_y.round() as u16;
+                    let size = caught.size.round() as u16;
+                    
+                    if x >= caught_screen_x && x < caught_screen_x + size &&
+                       y >= caught_screen_y && y < caught_screen_y + size {
                         match caught.item_type {
                             ItemType::Gold => {
-                                if caught.size > 1.5 {
-                                    char_to_draw = '◆';
-                                    style = Style::default().fg(Color::Yellow);
-                                } else {
-                                    char_to_draw = '♦';
-                                    style = Style::default().fg(Color::Yellow);
-                                }
+                                char_to_draw = if caught.size > 1.5 { '◆' } else { '♦' };
+                                style = Style::default().fg(Color::Yellow);
                             }
                             ItemType::Stone => {
-                                if caught.size > 1.5 {
-                                    char_to_draw = '■';
-                                    style = Style::default().fg(Color::Gray);
-                                } else {
-                                    char_to_draw = '□';
-                                    style = Style::default().fg(Color::DarkGray);
-                                }
+                                char_to_draw = if caught.size > 1.5 { '■' } else { '□' };
+                                style = Style::default().fg(Color::Gray);
                             }
                             ItemType::Nothing => {}
                         }
@@ -448,10 +432,13 @@ impl GoldMiner {
                 }
 
                 // 绘制钩子和绳子
-                if y as f32 == self.hook_y.floor() && x as f32 == hook_screen_x.floor() {
-                    line_spans.push(Span::styled(hook_char, Style::default().fg(Color::Red)));
-                } else if x as f32 == hook_screen_x.floor() && (y as f32) < self.hook_y {
-                    line_spans.push(Span::styled(rope_char, Style::default().fg(Color::Red)));
+                let hook_x = hook_screen_x.round() as u16;
+                let hook_y = self.hook_y.round() as u16;
+                
+                if y == hook_y && x == hook_x {
+                    line_spans.push(Span::styled("▼", Style::default().fg(Color::Red)));
+                } else if x == hook_x && y < hook_y {
+                    line_spans.push(Span::styled("│", Style::default().fg(Color::Red)));
                 } else {
                     line_spans.push(Span::styled(char_to_draw.to_string(), style));
                 }
@@ -468,7 +455,7 @@ impl GoldMiner {
         f.render_widget(paragraph, area);
     }
 
-    pub fn render_pause<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_pause(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         if self.game_state == GameState::Paused {
             self.compiling.borrow_mut().render(f, area);
         }
@@ -496,7 +483,7 @@ impl Game for GoldMiner {
         self.update()
     }
 
-    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+    fn render(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         self.render(f, area)
     }
 

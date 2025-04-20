@@ -3,9 +3,9 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{error::Error, io, time::Duration};
+use std::{error::Error, io::{self, Stdout}, time::Duration};
 use tui::{
-    backend::{Backend, CrosstermBackend},
+    backend::CrosstermBackend,
     Terminal,
 };
 
@@ -39,8 +39,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_game<B: Backend>(
-    terminal: &mut Terminal<B>,
+fn run_game(
+    terminal: &mut Terminal<CrosstermBackend<Stdout>>,
     game_manager: &mut GameManager,
 ) -> io::Result<()> {
     loop {

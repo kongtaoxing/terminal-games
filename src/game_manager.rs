@@ -2,15 +2,17 @@ use crate::games::{
     goldminer::GoldMiner, snake::Snake, tetris::Tetris, twenty_forty_eight::TwentyFortyEight,
 };
 use crate::translation::{Language, Translations};
+use crate::Game;
 use crossterm::event::KeyCode;
 use tui::{
-    backend::Backend,
     layout::Rect,
     style::{Color, Style},
     text::{Span, Spans},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
+use std::io::Stdout;
+use tui::backend::CrosstermBackend;
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum CompileLanguage {
@@ -29,71 +31,16 @@ pub enum GameType {
     TwentyFortyEight,
 }
 
-// 使用枚举替代 trait object
-enum GameEnum {
-    GoldMiner(GoldMiner),
-    Tetris(Tetris),
-    Snake(Snake),
-    TwentyFortyEight(TwentyFortyEight),
-}
-
-impl GameEnum {
-    fn handle_input(&mut self, key: KeyCode) -> () {
-        match self {
-            Self::GoldMiner(game) => { game.handle_input(key); },
-            Self::Tetris(game) => { game.handle_input(key); },
-            Self::Snake(game) => { game.handle_input(key); },
-            Self::TwentyFortyEight(game) => { game.handle_input(key); },
-        }
-    }
-
-    fn update(&mut self) {
-        match self {
-            Self::GoldMiner(game) => game.update(),
-            Self::Tetris(game) => game.update(),
-            Self::Snake(game) => game.update(),
-            Self::TwentyFortyEight(game) => game.update(),
-        }
-    }
-
-    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
-        match self {
-            Self::GoldMiner(game) => game.render(f, area),
-            Self::Tetris(game) => game.render(f, area),
-            Self::Snake(game) => game.render(f, area),
-            Self::TwentyFortyEight(game) => game.render(f, area),
-        }
-    }
-
-    fn set_language(&mut self, language: Language) {
-        match self {
-            Self::GoldMiner(game) => game.set_language(language),
-            Self::Tetris(game) => game.set_language(language),
-            Self::Snake(game) => game.set_language(language),
-            Self::TwentyFortyEight(game) => game.set_language(language),
-        }
-    }
-
-    fn set_compile_language(&mut self, lang: CompileLanguage) {
-        match self {
-            Self::GoldMiner(game) => game.set_compile_language(lang),
-            Self::Tetris(game) => game.set_compile_language(lang),
-            Self::Snake(game) => game.set_compile_language(lang),
-            Self::TwentyFortyEight(game) => game.set_compile_language(lang),
-        }
-    }
-}
-
-// 定义游戏信息结构体
-struct GameInfo {
+// 移除 GameEnum，直接使用 Box<dyn Game>
+pub struct GameInfo {
     game_type: GameType,
     title_key: &'static str,
-    game: GameEnum,
+    game: Box<dyn Game>,
 }
 
 pub struct GameManager {
     pub state: GameType,
-    games: [GameInfo; 4], // 固定大小的数组
+    games: Vec<GameInfo>, // 改为 Vec 而不是固定大小数组
     selected_game: usize,
     translations: Translations,
     selecting_language: bool,
@@ -104,26 +51,26 @@ pub struct GameManager {
 impl GameManager {
     pub fn new() -> Self {
         // 定义所有游戏
-        let games = [
+        let games = vec![
             GameInfo {
                 game_type: GameType::GoldMiner,
                 title_key: "goldminer_title",
-                game: GameEnum::GoldMiner(GoldMiner::new()),
+                game: Box::new(GoldMiner::new()),
             },
             GameInfo {
                 game_type: GameType::Tetris,
                 title_key: "tetris_title",
-                game: GameEnum::Tetris(Tetris::new()),
+                game: Box::new(Tetris::new()),
             },
             GameInfo {
                 game_type: GameType::Snake,
                 title_key: "snake_title",
-                game: GameEnum::Snake(Snake::new()),
+                game: Box::new(Snake::new()),
             },
             GameInfo {
                 game_type: GameType::TwentyFortyEight,
                 title_key: "twenty_forty_eight_title",
-                game: GameEnum::TwentyFortyEight(TwentyFortyEight::new()),
+                game: Box::new(TwentyFortyEight::new()),
             },
         ];
 
@@ -220,7 +167,7 @@ impl GameManager {
         }
     }
 
-    pub fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+    pub fn render(&mut self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         match self.state {
             GameType::MainMenu => self.render_main_menu(f, area),
             _ => {
@@ -232,7 +179,7 @@ impl GameManager {
         }
     }
 
-    fn render_main_menu<B: Backend>(&self, f: &mut Frame<B>, area: Rect) {
+    fn render_main_menu(&self, f: &mut Frame<CrosstermBackend<Stdout>>, area: Rect) {
         let mut menu_text = vec![
             Spans::from(vec![Span::styled(
                 self.translations.get_text("menu_title"),
