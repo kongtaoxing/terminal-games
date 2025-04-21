@@ -1,5 +1,5 @@
 use crate::games::{
-    goldminer::GoldMiner, snake::Snake, tetris::Tetris, twenty_forty_eight::TwentyFortyEight,
+    goldminer::GoldMiner, snake::Snake, tetris::Tetris, twenty_forty_eight::TwentyFortyEight, minesweeper::MineSweeper
 };
 use crate::translation::{Language, Translations};
 use crate::Game;
@@ -29,6 +29,7 @@ pub enum GameType {
     Tetris,
     Snake,
     TwentyFortyEight,
+    MineSweeper,
 }
 
 // 移除 GameEnum，直接使用 Box<dyn Game>
@@ -71,6 +72,11 @@ impl GameManager {
                 game_type: GameType::TwentyFortyEight,
                 title_key: "twenty_forty_eight_title",
                 game: Box::new(TwentyFortyEight::new()),
+            },
+            GameInfo {
+                game_type: GameType::MineSweeper,
+                title_key: "minesweeper_title",
+                game: Box::new(MineSweeper::new()),
             },
         ];
 
