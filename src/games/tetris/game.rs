@@ -7,6 +7,8 @@ use crate::{
 use crossterm::event::KeyCode;
 use rand::Rng;
 use std::cell::RefCell;
+use std::io::Stdout;
+use tui::backend::CrosstermBackend;
 use tui::{
     layout::Rect,
     style::{Color, Style},
@@ -14,8 +16,6 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use std::io::Stdout;
-use tui::backend::CrosstermBackend;
 
 #[derive(PartialEq)]
 pub enum GameState {
@@ -431,7 +431,6 @@ impl Tetris {
         self.compiling.borrow_mut().set_language(lang);
     }
 }
-
 
 impl Game for Tetris {
     fn new() -> Self {

@@ -6,10 +6,10 @@ use crate::{
 };
 use crossterm::event::KeyCode;
 use rand::Rng;
-use tui::backend::CrosstermBackend;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::io::Stdout;
+use tui::backend::CrosstermBackend;
 use tui::{
     layout::Rect,
     style::{Color, Style},
@@ -400,7 +400,7 @@ impl Game for Snake {
 
     fn handle_input(&mut self, key: KeyCode) {
         self.handle_input(key);
-    }   
+    }
 
     fn update(&mut self) {
         self.update();
@@ -418,4 +418,3 @@ impl Game for Snake {
         Snake::set_compile_language(self, lang);
     }
 }
-  

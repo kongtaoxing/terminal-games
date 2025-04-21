@@ -1,9 +1,12 @@
 use crate::games::{
-    goldminer::GoldMiner, snake::Snake, tetris::Tetris, twenty_forty_eight::TwentyFortyEight, minesweeper::MineSweeper
+    goldminer::GoldMiner, minesweeper::MineSweeper, snake::Snake, tetris::Tetris,
+    twenty_forty_eight::TwentyFortyEight,
 };
 use crate::translation::{Language, Translations};
 use crate::Game;
 use crossterm::event::KeyCode;
+use std::io::Stdout;
+use tui::backend::CrosstermBackend;
 use tui::{
     layout::Rect,
     style::{Color, Style},
@@ -11,8 +14,6 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use std::io::Stdout;
-use tui::backend::CrosstermBackend;
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum CompileLanguage {
@@ -158,8 +159,7 @@ impl GameManager {
                 }
             }
             _ => {
-                if let Some(game_info) = self.games.iter_mut()
-                    .find(|g| g.game_type == self.state) {
+                if let Some(game_info) = self.games.iter_mut().find(|g| g.game_type == self.state) {
                     game_info.game.handle_input(key);
                 }
             }
@@ -167,8 +167,7 @@ impl GameManager {
     }
 
     pub fn update(&mut self) {
-        if let Some(game_info) = self.games.iter_mut()
-            .find(|g| g.game_type == self.state) {
+        if let Some(game_info) = self.games.iter_mut().find(|g| g.game_type == self.state) {
             game_info.game.update();
         }
     }
@@ -177,8 +176,7 @@ impl GameManager {
         match self.state {
             GameType::MainMenu => self.render_main_menu(f, area),
             _ => {
-                if let Some(game_info) = self.games.iter_mut()
-                    .find(|g| g.game_type == self.state) {
+                if let Some(game_info) = self.games.iter_mut().find(|g| g.game_type == self.state) {
                     game_info.game.render(f, area);
                 }
             }
@@ -199,7 +197,8 @@ impl GameManager {
         // 动态生成游戏列表
         for (index, game_info) in self.games.iter().enumerate() {
             menu_text.push(Spans::from(vec![Span::styled(
-                format!(" {}. {}", 
+                format!(
+                    " {}. {}",
                     index + 1,
                     self.translations.get_text(game_info.title_key)
                 ),

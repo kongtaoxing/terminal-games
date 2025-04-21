@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::io::Stdout;
 use tui::{
     backend::CrosstermBackend,
     layout::Rect,
@@ -7,7 +8,6 @@ use tui::{
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use std::io::Stdout;
 
 use crate::game_manager::CompileLanguage;
 

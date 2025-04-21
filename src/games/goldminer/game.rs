@@ -13,8 +13,8 @@ use crate::games::goldminer::item::{Item, ItemType};
 use crate::translation::{Language, Translations};
 use crate::{
     game_manager::CompileLanguage,
-    games::{compiling::Compiling, goldminer::hook::HookState},
     games::game_trait::Game,
+    games::{compiling::Compiling, goldminer::hook::HookState},
 };
 
 // 添加游戏状态枚举
@@ -390,11 +390,14 @@ impl GoldMiner {
                 for item in &self.items {
                     let item_screen_x = item.x.round() as u16;
                     let item_screen_y = item.y.round() as u16;
-                    
+
                     // 考虑物品大小，创建渲染范围
                     let size = item.size.round() as u16;
-                    if x >= item_screen_x && x < item_screen_x + size &&
-                       y >= item_screen_y && y < item_screen_y + size {
+                    if x >= item_screen_x
+                        && x < item_screen_x + size
+                        && y >= item_screen_y
+                        && y < item_screen_y + size
+                    {
                         match item.item_type {
                             ItemType::Gold => {
                                 char_to_draw = if item.size > 1.5 { '◆' } else { '♦' };
@@ -414,9 +417,12 @@ impl GoldMiner {
                     let caught_screen_x = hook_screen_x.round() as u16;
                     let caught_screen_y = self.hook_y.round() as u16;
                     let size = caught.size.round() as u16;
-                    
-                    if x >= caught_screen_x && x < caught_screen_x + size &&
-                       y >= caught_screen_y && y < caught_screen_y + size {
+
+                    if x >= caught_screen_x
+                        && x < caught_screen_x + size
+                        && y >= caught_screen_y
+                        && y < caught_screen_y + size
+                    {
                         match caught.item_type {
                             ItemType::Gold => {
                                 char_to_draw = if caught.size > 1.5 { '◆' } else { '♦' };
@@ -434,7 +440,7 @@ impl GoldMiner {
                 // 绘制钩子和绳子
                 let hook_x = hook_screen_x.round() as u16;
                 let hook_y = self.hook_y.round() as u16;
-                
+
                 if y == hook_y && x == hook_x {
                     line_spans.push(Span::styled("▼", Style::default().fg(Color::Red)));
                 } else if x == hook_x && y < hook_y {
