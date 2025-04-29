@@ -3,6 +3,7 @@ mod goldminer;
 mod snake;
 mod tetris;
 mod twenty_forty_eight;
+mod minesweeper;
 pub use common::Language;
 
 use common::COMMON_TRANSLATIONS;
@@ -11,6 +12,7 @@ use snake::SNAKE_TRANSLATIONS;
 use std::collections::HashMap;
 use tetris::TETRIS_TRANSLATIONS;
 use twenty_forty_eight::TWENTY_FORTY_EIGHT_TRANSLATIONS;
+use minesweeper::MINESWEEPER_TRANSLATIONS;
 pub struct Translations {
     texts: HashMap<String, HashMap<Language, String>>,
     current_language: Language,
@@ -54,6 +56,11 @@ impl Translations {
         );
         texts.extend(
             TWENTY_FORTY_EIGHT_TRANSLATIONS
+                .iter()
+                .map(|(k, v)| (k.to_string(), v.clone())),
+        );
+        texts.extend(
+            MINESWEEPER_TRANSLATIONS
                 .iter()
                 .map(|(k, v)| (k.to_string(), v.clone())),
         );

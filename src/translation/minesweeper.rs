@@ -13,5 +13,6 @@ lazy_static! {
 
         // let mut welcome_to = HashMap::new();
         
-    }
+        m
+    };
 }
