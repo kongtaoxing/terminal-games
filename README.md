@@ -8,6 +8,7 @@ A collection of classic terminal-based games implemented in Rust. Currently feat
 2. [Tetris](./src/games/tetris/README.md)
 3. [Snake](./src/games/snake/README.md)
 4. [2048](./src/games/twenty_forty_eight/README.md)
+5. [MineSweeper](./src/games/minesweeper/README.md)
 
 ## Features
 

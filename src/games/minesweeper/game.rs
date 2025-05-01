@@ -165,9 +165,19 @@ impl MineSweeper {
                 Style::default().fg(Color::Yellow),
             )]),
             Spans::from(""),
+            Spans::from(vec![Span::styled(
+                self.translations.get_text("how_to_play"),
+                Style::default().fg(Color::Green),
+            )]),
+            Spans::from(""),
+            Spans::from(self.translations.get_text("controls")),
+            Spans::from(""),
+            Spans::from(self.translations.get_text("goal")),
+            Spans::from(""),
+            Spans::from(""),
             Spans::from(self.translations.get_text("press_enter")),
         ];
-
+    
         let paragraph = Paragraph::new(welcome_text)
             .block(Block::default().borders(Borders::ALL))
             .alignment(tui::layout::Alignment::Center);
