@@ -148,7 +148,7 @@ impl MineSweeper {
             language: Language::English,
             compile_language: CompileLanguage::Rust,
             game_state: GameState::Welcome,
-            translations: Translations::new(),
+            translations: Translations::new().with_namespace("minesweeper"),
             compiling: RefCell::new(Compiling::new()),
             last_click_x: None,
             last_click_y: None,

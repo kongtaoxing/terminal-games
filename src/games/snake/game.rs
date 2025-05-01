@@ -81,7 +81,7 @@ impl Snake {
             score: 0,
             tick_count: 0,
             game_state: GameState::Welcome,
-            translations: Translations::new(),
+            translations: Translations::new().with_namespace("snake"),
             compiling: RefCell::new(Compiling::new()),
             next_direction: Direction::Right,
         };

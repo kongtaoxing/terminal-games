@@ -56,27 +56,27 @@ impl GameManager {
         let games = vec![
             GameInfo {
                 game_type: GameType::GoldMiner,
-                title_key: "goldminer_title",
+                title_key: "goldminer.goldminer_title",
                 game: Box::new(GoldMiner::new()),
             },
             GameInfo {
                 game_type: GameType::Tetris,
-                title_key: "tetris_title",
+                title_key: "tetris.tetris_title",
                 game: Box::new(Tetris::new()),
             },
             GameInfo {
                 game_type: GameType::Snake,
-                title_key: "snake_title",
+                title_key: "snake.snake_title",
                 game: Box::new(Snake::new()),
             },
             GameInfo {
                 game_type: GameType::TwentyFortyEight,
-                title_key: "twenty_forty_eight_title",
+                title_key: "2048.twenty_forty_eight_title",
                 game: Box::new(TwentyFortyEight::new()),
             },
             GameInfo {
                 game_type: GameType::MineSweeper,
-                title_key: "minesweeper_title",
+                title_key: "minesweeper.minesweeper_title",
                 game: Box::new(MineSweeper::new()),
             },
         ];

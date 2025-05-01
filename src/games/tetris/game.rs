@@ -106,7 +106,7 @@ impl Tetris {
             current_shape: SHAPES[piece],
             block_width: 2,
             game_state: GameState::Welcome,
-            translations: Translations::new(),
+            translations: Translations::new().with_namespace("tetris"),
             compiling: RefCell::new(Compiling::new()),
         }
     }

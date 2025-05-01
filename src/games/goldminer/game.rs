@@ -68,7 +68,7 @@ impl GoldMiner {
             level: 1,
             items_collected: 0,
             game_state: GameState::Welcome, // 初始状态为欢迎界面
-            translations: Translations::new(),
+            translations: Translations::new().with_namespace("goldminer"),
             compiling: RefCell::new(Compiling::new()),
         };
         game.generate_items();

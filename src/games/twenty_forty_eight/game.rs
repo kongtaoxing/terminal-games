@@ -49,7 +49,7 @@ impl TwentyFortyEight {
             score: 0,
             game_over: false,
             game_state: GameState::Welcome,
-            translations: Translations::new(),
+            translations: Translations::new().with_namespace("2048"),
             compiling: RefCell::new(Compiling::new()),
         };
         game.spawn_new_tile();
