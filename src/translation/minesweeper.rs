@@ -11,7 +11,15 @@ lazy_static! {
         minesweeper_title.insert(Language::Chinese, "扫雷".to_string());
         m.insert("minesweeper_title", minesweeper_title);
 
-        // let mut welcome_to = HashMap::new();
+        let mut game_win = HashMap::new();
+        game_win.insert(Language::English, "Congratulations! You Win!".to_string());
+        game_win.insert(Language::Chinese, "恭喜你！胜利了！".to_string());
+        m.insert("game_win", game_win);
+
+        let mut game_over = HashMap::new();
+        game_over.insert(Language::English, "Game Over!".to_string());
+        game_over.insert(Language::Chinese, "游戏结束！".to_string());
+        m.insert("game_over", game_over);
         
         m
     };

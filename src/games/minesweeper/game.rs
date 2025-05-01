@@ -1,5 +1,5 @@
 use crossterm::event::KeyCode;
-use std::{cell::RefCell, io::Stdout, time::Instant};
+use std::{cell::RefCell, io::Stdout};
 use tui::{
     backend::CrosstermBackend,
     layout::Rect,
@@ -28,6 +28,7 @@ pub struct MineSweeper {
     revealed: Vec<Vec<bool>>,
     flagged: Vec<Vec<bool>>,
     game_over: bool,
+    is_win: bool,
     cursor_x: usize,
     cursor_y: usize,
     language: Language,
@@ -61,22 +62,22 @@ impl Game for MineSweeper {
                 }
 
                 match key {
-                    KeyCode::Up => {
+                    KeyCode::Up | KeyCode::Char('w') => {
                         if self.cursor_y > 0 {
                             self.cursor_y -= 1;
                         }
                     }
-                    KeyCode::Down => {
+                    KeyCode::Down | KeyCode::Char('s') => {
                         if self.cursor_y < BOARD_SIZE - 1 {
                             self.cursor_y += 1;
                         }
                     }
-                    KeyCode::Left => {
+                    KeyCode::Left | KeyCode::Char('a') => {
                         if self.cursor_x > 0 {
                             self.cursor_x -= 1;
                         }
                     }
-                    KeyCode::Right => {
+                    KeyCode::Right | KeyCode::Char('d') => {
                         if self.cursor_x < BOARD_SIZE - 1 {
                             self.cursor_x += 1;
                         }
@@ -91,6 +92,7 @@ impl Game for MineSweeper {
                     KeyCode::Char('f') => {
                         if !self.revealed[self.cursor_y][self.cursor_x] {
                             self.flagged[self.cursor_y][self.cursor_x] = !self.flagged[self.cursor_y][self.cursor_x];
+                            self.check_win();
                         }
                     }
                     KeyCode::Char('p') | KeyCode::Esc => {
@@ -140,6 +142,7 @@ impl MineSweeper {
             revealed: vec![vec![false; BOARD_SIZE]; BOARD_SIZE],
             flagged: vec![vec![false; BOARD_SIZE]; BOARD_SIZE],
             game_over: false,
+            is_win: false,
             cursor_x: 0,
             cursor_y: 0,
             language: Language::English,
@@ -178,37 +181,36 @@ impl MineSweeper {
         text.push(Spans::from("┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐"));
 
         for y in 0..BOARD_SIZE {
-            let mut line = String::new();
-            line.push('│');
-            
+            let mut line = Vec::new();
             for x in 0..BOARD_SIZE {
-                let mut cell_str = String::new();
                 let mut style = Style::default();
-
-                if self.revealed[y][x] {
+                let cell_str = if self.revealed[y][x] {
                     if self.mines[y][x] {
-                        cell_str = "  💣 ".to_string();
-                        if self.last_click_x == Some(x) && self.last_click_y == Some(y) {
-                            style = style.bg(Color::Red);
-                        }
+                        " 💣 ".to_string()
                     } else {
                         let count = self.board[y][x];
                         if count > 0 {
-                            cell_str = format!("{:^4}", count);
+                            format!("{:^4}", count)
                         } else {
-                            cell_str = "    ".to_string();
+                            "    ".to_string()
                         }
                     }
                 } else if self.flagged[y][x] {
-                    cell_str = "  🚩 ".to_string();
+                    " 🚩 ".to_string()
                 } else {
-                    cell_str = "  ■ ".to_string();
+                    "  ■ ".to_string()
+                };
+
+                // 设置当前光标位置的背景色为黄色
+                if x == self.cursor_x && y == self.cursor_y {
+                    style = style.bg(Color::Yellow);
                 }
-                line.push_str(&format!("{}│", cell_str));
+                line.push(Span::styled(cell_str, style));
+                line.push(Span::raw("│"));
             }
+            line.insert(0, Span::raw("│"));
             text.push(Spans::from(line));
 
-            // 除了最后一行，每行数字后面添加分隔线
             if y < BOARD_SIZE - 1 {
                 text.push(Spans::from("├────┼────┼────┼────┼────┼────┼────┼────┼────┼────┤"));
             }
@@ -220,10 +222,17 @@ impl MineSweeper {
         // 添加游戏结束提示
         if self.game_over {
             text.push(Spans::from(""));
-            text.push(Spans::from(vec![Span::styled(
-                self.translations.get_text("game_over"),
-                Style::default().fg(Color::Red),
-            )]));
+            if self.is_win {
+                text.push(Spans::from(vec![Span::styled(
+                    self.translations.get_text("game_win"),
+                    Style::default().fg(Color::Green),
+                )]));
+            } else {
+                text.push(Spans::from(vec![Span::styled(
+                    self.translations.get_text("game_over"),
+                    Style::default().fg(Color::Red),
+                )]));
+            }
             text.push(Spans::from(self.translations.get_text("press_r_restart")));
         }
 
@@ -307,6 +316,52 @@ impl MineSweeper {
                     let ny = y as i32 + dy;
                     if nx >= 0 && nx < BOARD_SIZE as i32 && ny >= 0 && ny < BOARD_SIZE as i32 {
                         self.reveal(nx as usize, ny as usize);
+                    }
+                }
+            }
+        }
+
+        self.check_win();
+    }
+
+    fn check_win(&mut self) {
+        // 检查是否所有非地雷格子都已揭开
+        let mut all_safe_revealed = true;
+        for y in 0..BOARD_SIZE {
+            for x in 0..BOARD_SIZE {
+                if !self.mines[y][x] && !self.revealed[y][x] {
+                    all_safe_revealed = false;
+                    break;
+                }
+            }
+            if !all_safe_revealed {
+                break;
+            }
+        }
+
+        // 检查是否所有地雷都被正确标记
+        let mut all_mines_flagged = true;
+        for y in 0..BOARD_SIZE {
+            for x in 0..BOARD_SIZE {
+                if self.mines[y][x] != self.flagged[y][x] {
+                    all_mines_flagged = false;
+                    break;
+                }
+            }
+            if !all_mines_flagged {
+                break;
+            }
+        }
+
+        // 任一条件满足即胜利
+        if all_safe_revealed || all_mines_flagged {
+            self.is_win = true;
+            self.game_over = true;
+            // 胜利时显示所有地雷位置
+            for y in 0..BOARD_SIZE {
+                for x in 0..BOARD_SIZE {
+                    if self.mines[y][x] {
+                        self.revealed[y][x] = true;
                     }
                 }
             }
