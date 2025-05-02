@@ -1,4 +1,4 @@
-name: Build and Release
+name: Release and Bump Homebrew Formula
 
 on:
   workflow_dispatch:
@@ -72,12 +72,11 @@ jobs:
           ls -R artifacts || echo "No artifacts found"
       - name: Prepare and package artifacts
         run: |
-          # Create a directory for packaged assets
           mkdir -p packaged-assets
 
           # Windows: Create .zip with renamed executable
           mkdir -p tmp-windows
-          cp artifacts/tgame-windows-x86_64/tgame.exe tmp-windows/tgame
+          cp artifacts/tgame-windows-x86_64/tgame.exe tmp-windows/tgame.exe
           cd tmp-windows
           zip -r ../packaged-assets/tgame-windows-x86_64.zip .
           cd ..
@@ -97,19 +96,28 @@ jobs:
           cp artifacts/tgame-macos-arm64/tgame tmp-macos-arm64/tgame
           tar -C tmp-macos-arm64 -czf packaged-assets/tgame-macos-arm64.tar.gz tgame
 
-          # List packaged assets
           ls -l packaged-assets
-      - name: Create draft release
+      - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Creating draft release for ${{ github.event.inputs.version }}"
-          gh release create "${{ github.event.inputs.version }}" \
+          gh release create "${GITHUB_REF#refs/tags/}" \
             packaged-assets/tgame-windows-x86_64.zip \
             packaged-assets/tgame-linux-x86_64.tar.gz \
             packaged-assets/tgame-macos-x86_64.tar.gz \
             packaged-assets/tgame-macos-arm64.tar.gz \
             --title "Release ${{ github.event.inputs.version }}" \
-            --notes "Release ${{ github.event.inputs.version }} for tgame" \
-            --draft=true
-          echo "Draft release created. Please visit https://github.com/${{ github.repository }}/releases to edit the release notes and publish."
+            --notes "Release ${{ github.event.inputs.version }} for tgame"
+
+  bump_formula:
+    needs: release
+    runs-on: macos-latest
+    steps:
+      - name: Bump Homebrew formula
+        uses: dawidd6/action-homebrew-bump-formula@v4
+        with:
+          token: ${{ secrets.PAT }}
+          user_name: kongtaoxing_tapbot
+          user_email: kongtaoxing@gmail.com
+          tap: kongtaoxing/homebrew-tap
+          formula: tgame
