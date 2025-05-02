@@ -119,7 +119,6 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           user_name: kongtaoxing_tapbot
-          user_email: kongtaoxing@gmail.com
           tap: kongtaoxing/homebrew-tap
           formula: tgame
           tag: ${{ github.event.inputs.version }}
