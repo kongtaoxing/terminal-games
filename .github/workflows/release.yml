@@ -17,18 +17,22 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact_name: tgame-windows-x86_64
+            compiled_name: terminal-games.exe
             executable: tgame.exe
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact_name: tgame-linux-x86_64
+            compiled_name: terminal-games
             executable: tgame
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact_name: tgame-macos-x86_64
+            compiled_name: terminal-games
             executable: tgame
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact_name: tgame-macos-arm64
+            compiled_name: terminal-games
             executable: tgame
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +46,7 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
       - name: Verify build output
         run: |
+          cp target/${{ matrix.target }}/release/${{ matrix.compiled_name }} target/${{ matrix.target }}/release/${{ matrix.executable }}
           ls -l target/${{ matrix.target }}/release/${{ matrix.executable }}
       - name: Upload artifact
         uses: actions/upload-artifact@v4
