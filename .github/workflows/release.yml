@@ -16,20 +16,24 @@ jobs:
         include:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: tgame-windows-x86_64.exe
+            artifact_name: tgame-windows-x86_64
             executable: tgame.exe
+            archive_ext: zip
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             artifact_name: tgame-linux-x86_64
             executable: tgame
+            archive_ext: tar.gz
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact_name: tgame-macos-x86_64
             executable: tgame
+            archive_ext: tar.gz
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact_name: tgame-macos-arm64
             executable: tgame
+            archive_ext: tar.gz
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust
@@ -40,11 +44,15 @@ jobs:
           target: ${{ matrix.target }}
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
+      - name: Prepare artifact
+        run: |
+          mkdir -p artifacts
+          cp target/${{ matrix.target }}/release/${{ matrix.executable }} artifacts/tgame${{ matrix.executable == 'tgame.exe' && '.exe' || '' }}
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: target/${{ matrix.target }}/release/${{ matrix.executable }}
+          path: artifacts/tgame${{ matrix.executable == 'tgame.exe' && '.exe' || '' }}
 
   release:
     needs: build
@@ -56,6 +64,46 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+      - name: Prepare and compress artifacts
+        run: |
+          # Create directories for each platform
+          mkdir -p release-assets
+
+          # Windows: Create .zip
+          if [ -f "artifacts/tgame-windows-x86_64/tgame.exe" ]; then
+            mkdir -p tmp/windows
+            cp artifacts/tgame-windows-x86_64/tgame.exe tmp/windows/tgame.exe
+            cd tmp/windows
+            zip -r ../../release-assets/tgame-windows-x86_64.zip .
+            cd ../..
+          fi
+
+          # Linux: Create .tar.gz
+          if [ -f "artifacts/tgame-linux-x86_64/tgame" ]; then
+            mkdir -p tmp/linux
+            cp artifacts/tgame-linux-x86_64/tgame tmp/linux/tgame
+            cd tmp/linux
+            tar -czf ../../release-assets/tgame-linux-x86_64.tar.gz .
+            cd ../..
+          fi
+
+          # MacOS x86_64: Create .tar.gz
+          if [ -f "artifacts/tgame-macos-x86_64/tgame" ]; then
+            mkdir -p tmp/macos-x86_64
+            cp artifacts/tgame-macos-x86_64/tgame tmp/macos-x86_64/tgame
+            cd tmp/macos-x86_64
+            tar -czf ../../release-assets/tgame-macos-x86_64.tar.gz .
+            cd ../..
+          fi
+
+          # MacOS arm64: Create .tar.gz
+          if [ -f "artifacts/tgame-macos-arm64/tgame" ]; then
+            mkdir -p tmp/macos-arm64
+            cp artifacts/tgame-macos-arm64/tgame tmp/macos-arm64/tgame
+            cd tmp/macos-arm64
+            tar -czf ../../release-assets/tgame-macos-arm64.tar.gz .
+            cd ../..
+          fi
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -67,38 +115,42 @@ jobs:
           draft: false
           prerelease: false
       - name: Upload Windows Asset
+        if: success()
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/tgame-windows-x86_64.exe/tgame.exe
-          asset_name: tgame-windows-x86_64.exe
-          asset_content_type: application/octet-stream
+          asset_path: release-assets/tgame-windows-x86_64.zip
+          asset_name: tgame-windows-x86_64.zip
+          asset_content_type: application/zip
       - name: Upload Linux Asset
+        if: success()
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/tgame-linux-x86_64/tgame
-          asset_name: tgame-linux-x86_64
-          asset_content_type: application/octet-stream
+          asset_path: release-assets/tgame-linux-x86_64.tar.gz
+          asset_name: tgame-linux-x86_64.tar.gz
+          asset_content_type: application/gzip
       - name: Upload MacOS x86_64 Asset
+        if: success()
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/tgame-macos-x86_64/tgame
-          asset_name: tgame-macos-x86_64
-          asset_content_type: application/octet-stream
+          asset_path: release-assets/tgame-macos-x86_64.tar.gz
+          asset_name: tgame-macos-x86_64.tar.gz
+          asset_content_type: application/gzip
       - name: Upload MacOS arm64 Asset
+        if: success()
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/tgame-macos-arm64/tgame
-          asset_name: tgame-macos-arm64
-          asset_content_type: application/octet-stream
+          asset_path: release-assets/tgame-macos-arm64.tar.gz
+          asset_name: tgame-macos-arm64.tar.gz
+          asset_content_type: application/gzip
