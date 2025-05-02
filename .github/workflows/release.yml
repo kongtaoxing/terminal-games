@@ -99,10 +99,11 @@ jobs:
 
           # List packaged assets
           ls -l packaged-assets
-      - name: Create and upload release
+      - name: Create draft release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Creating draft release for ${{ github.event.inputs.version }}"
           gh release create "${{ github.event.inputs.version }}" \
             packaged-assets/tgame-windows-x86_64.zip \
             packaged-assets/tgame-linux-x86_64.tar.gz \
@@ -110,4 +111,5 @@ jobs:
             packaged-assets/tgame-macos-arm64.tar.gz \
             --title "Release ${{ github.event.inputs.version }}" \
             --notes "Release ${{ github.event.inputs.version }} for tgame" \
-            --draft=false
+            --draft=true
+          echo "Draft release created. Please visit https://github.com/${{ github.repository }}/releases to edit the release notes and publish."
