@@ -101,7 +101,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${GITHUB_REF#refs/tags/}" \
+          echo "Creating draft release for ${{ github.event.inputs.version }}"
+          gh release create "${{ github.event.inputs.version }}" \
             packaged-assets/tgame-windows-x86_64.zip \
             packaged-assets/tgame-linux-x86_64.tar.gz \
             packaged-assets/tgame-macos-x86_64.tar.gz \
