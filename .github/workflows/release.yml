@@ -40,11 +40,15 @@ jobs:
           target: ${{ matrix.target }}
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
+      - name: Verify build output
+        run: |
+          ls -l target/${{ matrix.target }}/release/${{ matrix.executable }}
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: target/${{ matrix.target }}/release/${{ matrix.executable }}
+          if-no-files-found: error
 
   release:
     needs: build
@@ -58,7 +62,7 @@ jobs:
           path: artifacts
       - name: List downloaded artifacts
         run: |
-          ls -R artifacts
+          ls -R artifacts || echo "No artifacts found"
       - name: Prepare and package artifacts
         run: |
           # Create a directory for packaged assets
@@ -85,6 +89,9 @@ jobs:
           mkdir -p tmp-macos-arm64
           cp artifacts/tgame-macos-arm64/tgame tmp-macos-arm64/tgame
           tar -C tmp-macos-arm64 -czf packaged-assets/tgame-macos-arm64.tar.gz tgame
+
+          # List packaged assets
+          ls -l packaged-assets
       - name: Create and upload release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
